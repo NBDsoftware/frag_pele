@@ -303,28 +303,12 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
     original_atom = hydrogen_atoms[0].get_name()  # Hydrogen of the core that we will use as growing point
     # Generate starting templates
     replacement_atom = fragment_names_dict[fragment_atom]
-    Growing.template_fragmenter.create_initial_template(initial_template=os.path.join(path_to_templates_generated,
-                                                                                      template_initial),
-                                                        final_template=os.path.join(path_to_templates_generated,
-                                                                                    template_final),
-                                                        original_atom_to_mod=[original_atom],
-                                                        heavy_atom=core_atom,
-                                                        atom_to_transform=replacement_atom,
-                                                        output_template_filename="{}_0".format(os.path.join(
-                                                                                        path_to_templates_generated,
-                                                                                        template_final)),
-                                                        path="", steps=iterations)
-    Growing.template_fragmenter.generate_starting_template(initial_template_file=os.path.join(path_to_templates_generated,
-                                                                                          template_initial),
-                                                           final_template_file=os.path.join(path_to_templates_generated,
-                                                                                          template_final),
-                                                           original_atom_to_mod=[original_atom],
-                                                           heavy_atom=core_atom,
-                                                           atom_to_transform=replacement_atom,
-                                                           output_template_filename="{}_ref".format(os.path.join(
-                                                                                        path_to_templates_generated,
-                                                                                        template_final)),
-                                                           path="", steps=iterations)
+    Growing.template_fragmenter.main(template_initial_path=os.path.join(path_to_templates_generated, template_initial),
+                                     template_grown_path=os.path.join(path_to_templates_generated, template_final),
+                                     step=1, total_steps=iterations, hydrogen_to_replace=replacement_atom,
+                                     core_atom_linker=core_atom,
+                                     tmpl_out_path=os.path.join(path_to_templates_generated,
+                                                                "{}_0".format(template_final)))
 
     # Make a copy in the main folder of Templates in order to use it as template for the simulation
     shutil.copy(os.path.join(path_to_templates_generated, "{}_0".format(template_final)),
@@ -366,25 +350,16 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
                                                                      #  because by default we have to use
                                                                      #  a list as input
         logger.info(c.LINES_MESSAGE)
-        if i != 0 and i != iterations:
-            Growing.template_fragmenter.grow_parameters_in_template(starting_template_file="{}_ref".format(
-                                                                    os.path.join(path_to_templates_generated,
-                                                                                 template_final)),
-                                                                    initial_template_file=os.path.join(
-                                                                                           path_to_templates_generated,
-                                                                                           template_initial),
-                                                                    final_template_file=os.path.join(
-                                                                                           path_to_templates_generated,
-                                                                                           template_final),
-                                                                    original_atom_to_mod=[original_atom],
-                                                                    heavy_atom=core_atom,
-                                                                    atom_to_transform=replacement_atom,
-                                                                    output_template_filename=os.path.join(
-                                                                        path_to_templates, template_final),
-                                                                    path="", step=i, total_steps=iterations)
-        elif i == iterations:
-            shutil.copy(os.path.join(path_to_templates_generated, template_final), os.path.join(path_to_templates,
-            template_final))
+        if i != 0:
+            Growing.template_fragmenter.main(template_initial_path=os.path.join(path_to_templates_generated, template_initial),
+                                             template_grown_path=os.path.join(path_to_templates_generated, template_final),
+                                             step=i+1, total_steps=iterations, hydrogen_to_replace=replacement_atom,
+                                             core_atom_linker=core_atom,
+                                             tmpl_out_path=os.path.join(path_to_templates,template_final))
+
+#        elif i+1 == iterations:
+#            shutil.copy(os.path.join(path_to_templates_generated, template_final), os.path.join(path_to_templates,
+#            template_final))
 
         # Make a copy of the template file in growing_templates folder
         shutil.copy(os.path.join(path_to_templates, template_final), template)
