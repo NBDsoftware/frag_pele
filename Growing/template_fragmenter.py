@@ -1,6 +1,3 @@
-import sys
-import re
-import os
 import logging
 
 # Getting the name of the module for the log system
@@ -17,9 +14,53 @@ PATTERN_OPLS2005_PHI = "{:5d} {:5d} {: 5d} {:5d} {:>9.5f} {: >4.1f} {: >3.1f}\n"
 
 
 class Atom:
+    """A class which contains all the information and properties of an Atom, and several methods to build templates from
+    this data (currently only in OPLS2005)."""
     def __init__(self, atom_id, parent_id, location, atom_type, pdb_atom_name, unknown, x_zmatrix=0, y_zmatrix=0,
                  z_zmatrix=0, sigma=0, epsilon=0, charge=0, radnpSGB=0, radnpType=0, sgbnpGamma=0, sgbnpType=0,
                  is_linker=False, is_fragment=False):
+        """
+        :param atom_id: ID of the atom in the template.
+        :type atom_id: int
+        :param parent_id: ID ot the parent atom.
+        :type parent_id: int
+        :param location: Location of the atom. M for backbone, S for side chain; ligand links and non-ligand links use
+        these classification for some checks. However, protein links define its backbone atoms independently of this
+        flag; protein residue templates have M only for N, C and CA, under whatever name is actually used for those
+        atoms.
+        :type location: str
+        :param atom_type: Atom type. For example: CA (carbon aromatic), CT (carbon terminal), etc.
+        :type atom_type: str
+        :param pdb_atom_name: PDB atom name.
+        :type pdb_atom_name: str
+        :param unknown: Nobody knows what is this...
+        :type unknown: int
+        :param x_zmatrix: Coord X of the Z-matrix.
+        :type x_zmatrix: float
+        :param y_zmatrix: Coord Y of the Z-matrix.
+        :type y_zmatrix: float
+        :param z_zmatrix: Coord Z of the Z-matrix.
+        :type z_zmatrix: float
+        :param sigma: sigma value, used to compute Van Der Waals terms. Units in Armstrong.
+        :type sigma: float
+        :param epsilon: epsilon value, used to compute Van Der Waals terms. Units in kcal/mol.
+        :type epsilon: float
+        :param charge: charge value, used to compute electrostatic potentials. Units are elementary charge.
+        :type charge: float
+        :param radnpSGB: radii of non polar SGB. Atomic radii used to calculate the surface of the molecules when
+        obtaining SGB Born radii.
+        :type radnpSGB: float
+        :param radnpType: radii of non polar Type. Atomic radii used to calculate SASA in the non-polar term of the SGB
+        and VDGBNP models
+        :type radnpType: float
+        :param sgbnpGamma: SGB non polar Gamma. Gamma parameter of the nonpolar model.
+        :type sgbnpGamma: float
+        :param sgbnpType: SGB non polar Type. Alpha parameter for the nonpolar model
+        :param is_linker: Flag set when the atom is linking the fragment and the core.
+        :type is_linker: bool
+        :param is_fragment: Flag set when the atom is of the fragment.
+        :type is_fragment: bool
+        """
         self.atom_id = int(atom_id)
         self.parent_id = int(parent_id)
         self.location = str(location)
@@ -103,7 +144,6 @@ class Phi:
 
 
 class TemplateOPLS2005:
-
     def __init__(self, path_to_template):
         self.path_to_template = path_to_template
         self.template_name = ""
@@ -168,7 +208,7 @@ class TemplateOPLS2005:
                 self.list_of_atoms[id].radnpSGB = float(get_string_from_line(line=line, index_initial=35, index_final=43))
                 self.list_of_atoms[id].radnpType = float(get_string_from_line(line=line, index_initial=44, index_final=52))
                 self.list_of_atoms[id].sgbnpGamma = float(get_string_from_line(line=line, index_initial=53,
-                                                                         index_final=66))
+                                                                               index_final=66))
                 self.list_of_atoms[id].sgbnpType = float(get_string_from_line(line=line, index_initial=67, index_final=80))
             except ValueError:
                 raise ValueError(
@@ -395,6 +435,13 @@ class ReduceProperty:
             result = function(radnpSGB)
             self.template.list_of_atoms[key].radnpSGB = result
 
+    def reduce_radnpType(self, function):
+        atoms = self.template.get_list_of_fragment_atoms()
+        for key, atom in atoms:
+            radnpType = atom.radnpType
+            result = function(radnpType)
+            self.template.list_of_atoms[key].radnpType = result
+
     def reduce_bond_eq_dist(self, function):
         bonds = self.template.get_list_of_fragment_bonds()
         for key, bond in bonds:
@@ -478,6 +525,29 @@ def set_connecting_atom(template_grown, pdb_atom_name):
 
 def main(template_initial_path, template_grown_path, step, total_steps, hydrogen_to_replace, core_atom_linker,
          tmpl_out_path):
+    """
+    Module to modify templates, currently working in OPLS2005. This main function basically compares two templates;
+    an initial and a grown one, extracting the atoms of the fragment (that have been grown). Then, it uses this data
+    to modify Linearly different attributes of the template, particularly, sigmas, charges, bond equilibrium distance,
+    and the radius non polar SGB from atoms and bonds of the fragment. This modification is performed according to a
+    lambda parameter that is computed dividing the current step by the total number of steps. Finally, the template is
+    modified and written again to an output file.
+    :param template_initial_path: Path to an OPLS2005 template of the core ligand.
+    :type template_initial_path: str
+    :param template_grown_path: Path to an OPLS2005 template of the ligand with the fragment added to the core.
+    :type template_grown_path: str
+    :param step: Current step of the total steps.
+    :type step: int
+    :param total_steps: Total number of steps.
+    :type total_steps: int
+    :param hydrogen_to_replace: PDB atom name of the hydrogen that will be replaced for the linking atom of the fragment.
+    :type hydrogen_to_replace: str
+    :param core_atom_linker: PDB atom name of the core that is linking the fragment.
+    :type core_atom_linker: str
+    :param tmpl_out_path: Output path for the template modified.
+    :type tmpl_out_path: str
+    :return: None
+    """
     lambda_to_reduce = float(step/total_steps)
     templ_ini = TemplateOPLS2005(template_initial_path)
     templ_grw = TemplateOPLS2005(template_grown_path)
@@ -492,10 +562,8 @@ def main(template_initial_path, template_grown_path, step, total_steps, hydrogen
     reductor.reduce_charges(reductor.reduce_value)
     reductor.reduce_bond_eq_dist(reductor.reduce_value)
     reductor.reduce_radnpSGB(reductor.reduce_value)
+    reductor.reduce_radnpType(reductor.reduce_value)
     templ_grw.write_template_to_file(template_new_name=tmpl_out_path)
 
 
-main(template_initial_path="/home/carlespl/project/growing/grow/4DJU_4DJW/DataLocal/Templates/OPLS2005/HeteroAtoms/growing_templates/ambz",
-     template_grown_path="/home/carlespl/project/growing/grow/4DJU_4DJW/DataLocal/Templates/OPLS2005/HeteroAtoms/growing_templates/grwz",
-     step=1, total_steps=10, hydrogen_to_replace="_H6_", core_atom_linker="_C6_",
-     tmpl_out_path="/home/carlespl/project/growing/grow/4DJU_4DJW/DataLocal/Templates/OPLS2005/HeteroAtoms/tesz")
+

@@ -99,7 +99,7 @@ def main(report_prefix, path_to_equilibration, steps=False, out_report=False, co
         df = select_subset_by_steps(df, steps)
     mean_quartile = compute_mean_quantile(df, column, quantile_value)
     results = (folder, mean_quartile)
-    line_of_report = "{}\t{:.2f}\t{:.3f}\n".format(results[0], float(results[1]))
+    line_of_report = "{}\t{:.2f}\n".format(results[0], float(results[1]))
     print(line_of_report)
     if out_report:
         if os.path.exists(out_report):
@@ -111,6 +111,9 @@ def main(report_prefix, path_to_equilibration, steps=False, out_report=False, co
 
 
 if __name__ == '__main__':
-    rep_pref, path, steps, file, out, equil_folder, col, quart = parse_arguments()
-    main(rep_pref, path, steps, file, out, equil_folder, col, quart)
+    rep_pref, path, steps, file,  equil_folder, out, col, quart = parse_arguments()
+    main(report_prefix=rep_pref, path_to_equilibration=path, steps=steps, out_report=out, column=col,
+         quantile_value=quart)
+
+
 

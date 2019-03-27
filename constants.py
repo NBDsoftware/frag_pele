@@ -18,6 +18,15 @@ if "bsc.mn" in machine:
     PATH_TO_LICENSE = "/gpfs/projects/bsc72/PELE++/license"
     # PlopRotTemp parameters
     SCHRODINGER_PY_PATH = "/gpfs/projects/bsc72/SCHRODINGER_ACADEMIC/utilities/python"
+    ENV_PYTHON2 = "/gpfs/projects/bsc72/SCHRODINGER_ACADEMIC/internal/lib/python2.7/site-packages/"
+if "bsccv03" in machine:
+    # PELE parameters
+    PATH_TO_PELE = "/data/EAPM/PELE/PELE++/bin/rev12360/Pele_rev12360_mpi"
+    PATH_TO_PELE_DATA = "/data/EAPM/PELE/PELE++/data/rev12360/Data"
+    PATH_TO_PELE_DOCUMENTS = "/data/EAPM/PELE/PELE++/Documents/rev12360"
+    PATH_TO_LICENSE = "/data/EAPM/PELE/PELE++/license"
+    SCHRODINGER_PY_PATH = "/data2/bsc72/SCHRODINGER_ACADEMIC/utilities/python"
+    ENV_PYTHON2 = "/data2/bsc72/SCHRODINGER_ACADEMIC/internal/lib/python2.7/site-packages/"
 else:
     # PELE parameters
     PATH_TO_PELE = "/home/dsoler/cleanPELE_rev/build_gnu/Pele_mpi"
@@ -25,6 +34,7 @@ else:
     PATH_TO_PELE_DOCUMENTS = "/home/dsoler/cleanPELE_rev/Documents"
     PATH_TO_LICENSE = "/sNow/easybuild/centos/7.4.1708/Skylake/software/PELE/licenses/"
     SCHRODINGER_PY_PATH = "/sNow/easybuild/centos/7.4.1708/Skylake/software/schrodinger2017-4/utilities/python"
+    ENV_PYTHON2 = ""
 
 CONTROL_TEMPLATE = os.path.join(DIR, "Templates/control_template.conf")
 RESULTS_FOLDER = "growing_output"
