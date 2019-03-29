@@ -7,6 +7,7 @@ import pandas as pd
 import glob
 import re
 import sys
+import socket
 
 """
 
@@ -20,7 +21,7 @@ import sys
    For any problem do not hesitate to contact us through the email address written below.
 
 """
-
+machine = socket.getfqdn()
 __author__ = "Daniel Soler Viladrich"
 __email__ = "daniel.soler@nostrumbiodiscovery.com"
 
@@ -33,6 +34,8 @@ FREQ = 1
 REPORT = "report"
 TRAJ = "trajectory"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
+if "life.bsc" in machine:
+    ACCEPTED_STEPS = 'AcceptedSteps'
 DIR = os.path.abspath(os.getcwd())
 
 

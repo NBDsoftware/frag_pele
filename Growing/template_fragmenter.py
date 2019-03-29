@@ -481,7 +481,7 @@ def get_string_from_line(line, index_initial, index_final):
 
 def find_equal_pdb_atom_names(template1, template2):
     pdb_atom_names_tmpl_1 = [template1.list_of_atoms[n].pdb_atom_name for n in range(1, len(template1.list_of_atoms)+1)]
-    pdb_atom_names_tmpl_2 = [template2.list_of_atoms[n].pdb_atom_name for n in range(1, len(template2.list_of_atoms+1))]
+    pdb_atom_names_tmpl_2 = [template2.list_of_atoms[n].pdb_atom_name for n in range(1, len(template2.list_of_atoms)+1)]
     return list(set(pdb_atom_names_tmpl_1).intersection(pdb_atom_names_tmpl_2))
 
 
