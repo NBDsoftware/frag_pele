@@ -29,7 +29,7 @@ def parse_arguments():
                         help="Used to set the flag 'export file? to True'")
     parser.add_argument("-o", "--out", default="",
                         help="Name of the output file")
-    parser.add_argument("-e", "--equil_folder", default="equilibration_result_*",
+    parser.add_argument("-e", "--equil_folder", default="equilibration*",
                         help="Prefix of the equilibration folder (where the results are)")
     parser.add_argument("-c", "--col", default="Binding Energy",
                         help="Name of the column that we will use to find the minimum value of the PELE report")
@@ -41,15 +41,15 @@ def parse_arguments():
     return args.rep_pref, args.path, args.steps, args.file, args.out, args.equil_folder, args.col, args.quart
 
 
-def pele_report2pandas(prefix):
+def pele_report2pandas(path):
     """
         This function merge the content of different report for PELE simulations in a single file pandas Data Frame.
     """
     data = []
-    report_list = glob.glob('{}[0-9]*'.format(prefix))
+    report_list = glob.glob('{}[0-9]*'.format(path))
     for report in report_list:
         tmp_data = pd.read_csv(report, sep='    ', engine='python')
-        processor = re.findall('\d+$'.format(prefix), report)
+        processor = re.findall('\d+$'.format(path), report)
         tmp_data['Processor'] = processor[0]
         data.append(tmp_data)
     return pd.concat(data)
@@ -92,29 +92,31 @@ def compute_sterr(dataframe, column, quantile_value):
     return err_subset
 
 
-def main(report_prefix, path_to_equilibration, equil_pattern="equilibration_result_*", steps=False, out_report=False,
+def main(report_prefix, path_to_equilibration, equil_pattern="equilibration*", steps=False, out_report=False,
          column="Binding Energy", quantile_value=0.25):
     folder_list = glob.glob(os.path.join(path_to_equilibration, equil_pattern))
-    for folder in folder_list:
-        path = glob.glob(os.path.join(folder_list, report_prefix))
-        df = pele_report2pandas(path)
-        if steps:
-            df = select_subset_by_steps(df, steps)
-        mean_quartile = compute_mean_quantile(df, column, quantile_value)
-        results = (folder, mean_quartile)
-        line_of_report = "{}\t{:.2f}\n".format(results[0], float(results[1]))
-        print(line_of_report)
-        if out_report:
-            if os.path.exists(out_report):
-                with open(out_report, "a") as report:
-                    report.write(line_of_report)
-            else:
-                with open(out_report, "w") as report:
-                    report.write("# FragmentResultsFolder\tFrAG-score\n")
+    for folder in list(folder_list):
+        try:
+            df = pele_report2pandas(os.path.join(folder, report_prefix))
+            if steps:
+                df = select_subset_by_steps(df, steps)
+            mean_quartile = compute_mean_quantile(df, column, quantile_value)
+            results = (folder, mean_quartile)
+            line_of_report = "{}\t{:.2f}\n".format(results[0], float(results[1]))
+            print(line_of_report)
+            if out_report:
+                if os.path.exists(out_report):
+                    with open(out_report, "a") as report:
+                        report.write(line_of_report)
+                else:
+                    with open(out_report, "w") as report:
+                        report.write("# FragmentResultsFolder\tFrAG-score\n")
+        except:
+            print("ERROR in {}".format(folder))
 
 
 if __name__ == '__main__':
-    rep_pref, path, steps, file,  equil_folder, out, col, quart = parse_arguments()
+    rep_pref, path, steps, file, out, equil_folder, col, quart = parse_arguments()
     main(report_prefix=rep_pref, path_to_equilibration=path, equil_pattern=equil_folder, steps=steps, out_report=out,
          column=col, quantile_value=quart)
 
