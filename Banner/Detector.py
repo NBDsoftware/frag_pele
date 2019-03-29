@@ -1,19 +1,18 @@
 import prody
 import logging
+import glob
+import multiprocessing as mp
 
 # Getting the name of the module for the log system
 logger = logging.getLogger(__name__)
 
 
 class Detector:
-    def __init__(self, pdb, threshold, atom1, atom2, atom3, atom4, lig_chain="L"):
+    def __init__(self, pdb, threshold, dihedrals, lig_chain="L"):
         self.pdb = pdb
         self.threshold = threshold
         self.lig_chain = lig_chain
-        self.atom1 = atom1
-        self.atom2 = atom2
-        self.atom3 = atom3
-        self.atom4 = atom4
+        self.dihedrals = dihedrals
 
     def read_pdb(self):
         pdb = prody.parsePDB(self.pdb)
@@ -31,20 +30,48 @@ class Detector:
 
     def select_atoms(self):
         ligand = self.get_ligand()
-        atoms = ligand.select("name {} {} {} {}".format(self.atom1, self.atom2, self.atom3, self.atom4))
-        return atoms
+        dihedral_list = []
+        for dihedral in self.dihedrals:
+            atoms = ligand.select("name {} {} {} {}".format(dihedral[0], dihedral[1], dihedral[2], dihedral[3]))
+            dihedral_list.append(atoms)
+        return dihedral_list
 
     def read_dihedral(self):
-        atoms = self.select_atoms()
-        dihedral_atoms = []
-        for atom in atoms:
-            dihedral_atoms.append(atom)
-        return prody.calcDihedral(dihedral_atoms[0], dihedral_atoms[1], dihedral_atoms[2], dihedral_atoms[3])
+        dihedral_list = self.select_atoms()
+        dihedral_results = []
+        for dihedral in dihedral_list:
+            dihedral_angle = prody.calcDihedral(dihedral[0], dihedral[1], dihedral[2], dihedral[3])
+            dihedral_results.append(dihedral_angle)
+        return dihedral_results
 
     def check_threshold_dihedral(self):
-        value = self.read_dihedral()
-        if abs(self.threshold) > value:
-            return True
-        else:
-            return False
+        value_list = self.read_dihedral()
+        check = True
+        for value in value_list:
+            if abs(self.threshold) < value:
+                check = False
+        return check
+
+
+def checker(pdb, threshold, dihedrals, lig_chain):
+    new_detector = Detector(pdb, threshold, dihedrals, lig_chain)
+    return new_detector.check_threshold_dihedral(), pdb
+
+
+def check_folder(folder, threshold, dihedrals, lig_chain="L", processors=4):
+    dict_of_checks = {}
+    list_of_pdbs = glob.glob("{}/*.pdb".format(folder))
+    multi = []
+    pool = mp.Pool(processors)
+    for pdb in list_of_pdbs:
+        multi.append(pool.apply_async(checker, [pdb, threshold, dihedrals, lig_chain]))
+    for process in multi:
+        flag, pdb = process.get()
+        dict_of_checks[pdb] = flag
+    return dict_of_checks
+
+
+
+
+
 
