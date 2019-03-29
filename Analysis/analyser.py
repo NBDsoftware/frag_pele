@@ -41,12 +41,12 @@ def parse_arguments():
     return args.rep_pref, args.path, args.steps, args.file, args.out, args.equil_folder, args.col, args.quart
 
 
-def pele_report2pandas(prefix, folder):
+def pele_report2pandas(prefix):
     """
         This function merge the content of different report for PELE simulations in a single file pandas Data Frame.
     """
     data = []
-    report_list = glob.glob('{}/{}*[0-9]*'.format(folder, prefix))
+    report_list = glob.glob('{}[0-9]*'.format(prefix))
     for report in report_list:
         tmp_data = pd.read_csv(report, sep='    ', engine='python')
         processor = re.findall('\d+$'.format(prefix), report)
@@ -92,28 +92,31 @@ def compute_sterr(dataframe, column, quantile_value):
     return err_subset
 
 
-def main(report_prefix, path_to_equilibration, steps=False, out_report=False, column="Binding Energy", quantile_value=0.25):
-    folder = glob.glob("{}".format(path_to_equilibration))
-    df = pele_report2pandas(report_prefix, folder)
-    if steps:
-        df = select_subset_by_steps(df, steps)
-    mean_quartile = compute_mean_quantile(df, column, quantile_value)
-    results = (folder, mean_quartile)
-    line_of_report = "{}\t{:.2f}\n".format(results[0], float(results[1]))
-    print(line_of_report)
-    if out_report:
-        if os.path.exists(out_report):
-            with open(out_report, "a") as report:
-                report.write(line_of_report)
-        else:
-            with open(out_report, "w") as report:
-                report.write("# FragmentResultsFolder\tFrAG-score\n")
+def main(report_prefix, path_to_equilibration, equil_pattern="equilibration_result_*", steps=False, out_report=False,
+         column="Binding Energy", quantile_value=0.25):
+    folder_list = glob.glob(os.path.join(path_to_equilibration, equil_pattern))
+    for folder in folder_list:
+        path = glob.glob(os.path.join(folder_list, report_prefix))
+        df = pele_report2pandas(path)
+        if steps:
+            df = select_subset_by_steps(df, steps)
+        mean_quartile = compute_mean_quantile(df, column, quantile_value)
+        results = (folder, mean_quartile)
+        line_of_report = "{}\t{:.2f}\n".format(results[0], float(results[1]))
+        print(line_of_report)
+        if out_report:
+            if os.path.exists(out_report):
+                with open(out_report, "a") as report:
+                    report.write(line_of_report)
+            else:
+                with open(out_report, "w") as report:
+                    report.write("# FragmentResultsFolder\tFrAG-score\n")
 
 
 if __name__ == '__main__':
     rep_pref, path, steps, file,  equil_folder, out, col, quart = parse_arguments()
-    main(report_prefix=rep_pref, path_to_equilibration=path, steps=steps, out_report=out, column=col,
-         quantile_value=quart)
+    main(report_prefix=rep_pref, path_to_equilibration=path, equil_pattern=equil_folder, steps=steps, out_report=out,
+         column=col, quantile_value=quart)
 
 
 
