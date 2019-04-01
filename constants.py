@@ -10,6 +10,7 @@ DIR = os.path.dirname(__file__)
 # Preparation inputs to grow
 
 machine = socket.getfqdn()
+print(machine)
 if "bsc.mn" in machine:
     # PELE parameters
     PATH_TO_PELE = "/gpfs/projects/bsc72/PELE++/mniv/rev12536/bin/Pele_mpi"
@@ -19,7 +20,7 @@ if "bsc.mn" in machine:
     # PlopRotTemp parameters
     SCHRODINGER_PY_PATH = "/gpfs/projects/bsc72/SCHRODINGER_ACADEMIC/utilities/python"
     ENV_PYTHON2 = "/gpfs/projects/bsc72/SCHRODINGER_ACADEMIC/internal/lib/python2.7/site-packages/"
-if "bsccv03" in machine:
+if "bsccv" in machine:
     # PELE parameters
     PATH_TO_PELE = "/data/EAPM/PELE/PELE++/bin/rev12360/Pele_rev12360_mpi"
     PATH_TO_PELE_DATA = "/data/EAPM/PELE/PELE++/data/rev12360/Data"

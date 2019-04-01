@@ -418,8 +418,8 @@ if __name__ == '__main__':
 
     list_of_instructions = sh.read_instructions_from_file(serie_file)
     print("READING INSTRUCTIONS... You will perform the growing of {} fragments. GOOD LUCK and ENJOY the trip :)".format(len(list_of_instructions)))
-    sh.check_instructions(list_of_instructions, complex_pdb, c_chain, f_chain)
     dict_traceback = corrector.main(complex_pdb)
+    sh.check_instructions(list_of_instructions, complex_pdb, c_chain, f_chain)
     for instruction in list_of_instructions:
         # We will iterate trough all individual instructions of file.
         if type(instruction) == list:  #  If in the individual instruction we have more than one command means successive growing.
