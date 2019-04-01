@@ -27,6 +27,7 @@ import Growing.bestStructs
 import Analysis.analyser as ans
 import constants as c
 import serie_handler as sh
+import Banner.Detector as dt
 
 # Calling configuration file for log system
 FilePath = os.path.abspath(__file__)
@@ -333,6 +334,13 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
                 continue
         # Otherwise start from the beggining
         pdb_input_paths = ["{}".format(os.path.join(pdbout_folder, str(i-1), pdb_file)) for pdb_file in pdb_selected_names]
+        # Banned dihedrals will be checked here
+        if c.BANNED_DIHEDRALS_ATOMS:
+            pdbs_with_banned_dihedrals = dt.check_folder(folder=os.path.join(pdbout_folder, str(i-1)),
+                                                         threshold=c.BANNED_ANGLE_THRESHOLD,
+                                                         dihedrals=c.BANNED_DIHEDRALS_ATOMS,
+                                                         lig_chain=c_chain, processors=cpus)
+            pdb_input_paths = [pdb_file for pdb_file, flag in pdbs_with_banned_dihedrals.items() if flag]
 
         # Control file modification
         overlapping_factor = float(min_overlap) + (((float(max_overlap) - float(min_overlap))*i) / iterations)
@@ -418,8 +426,8 @@ if __name__ == '__main__':
 
     list_of_instructions = sh.read_instructions_from_file(serie_file)
     print("READING INSTRUCTIONS... You will perform the growing of {} fragments. GOOD LUCK and ENJOY the trip :)".format(len(list_of_instructions)))
-    sh.check_instructions(list_of_instructions, complex_pdb, c_chain, f_chain)
     dict_traceback = corrector.main(complex_pdb)
+    sh.check_instructions(list_of_instructions, complex_pdb, c_chain, f_chain)
     for instruction in list_of_instructions:
         # We will iterate trough all individual instructions of file.
         if type(instruction) == list:  #  If in the individual instruction we have more than one command means successive growing.
