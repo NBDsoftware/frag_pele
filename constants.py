@@ -55,8 +55,8 @@ MIN_OVERLAP = 0.50
 DISTANCE_COUNTER = 4
 CONTACT_THRESHOLD = 0.3
 EPSILON = 0.5
-
-
+BANNED_DIHEDRALS_ATOMS = [["G17", "G2", "G0", "G1"], ["G6", "G5", "G7", "G22"]]
+BANNED_ANGLE_THRESHOLD = 30
 ##############################################
 
 # PRIVATE CONSTANTS (not to change)
