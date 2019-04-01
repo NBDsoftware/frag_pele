@@ -19,7 +19,7 @@ if "bsc.mn" in machine:
     # PlopRotTemp parameters
     SCHRODINGER_PY_PATH = "/gpfs/projects/bsc72/SCHRODINGER_ACADEMIC/utilities/python"
     ENV_PYTHON2 = "/gpfs/projects/bsc72/SCHRODINGER_ACADEMIC/internal/lib/python2.7/site-packages/"
-if "bsccv03" in machine:
+if "bsccv" in machine:
     # PELE parameters
     PATH_TO_PELE = "/data/EAPM/PELE/PELE++/bin/rev12360/Pele_rev12360_mpi"
     PATH_TO_PELE_DATA = "/data/EAPM/PELE/PELE++/data/rev12360/Data"
@@ -54,8 +54,8 @@ MIN_OVERLAP = 0.50
 DISTANCE_COUNTER = 4
 CONTACT_THRESHOLD = 0.3
 EPSILON = 0.5
-
-
+BANNED_DIHEDRALS_ATOMS = [["G17", "G2", "G0", "G1"], ["G6", "G5", "G7", "G22"]]
+BANNED_ANGLE_THRESHOLD = 30
 ##############################################
 
 # PRIVATE CONSTANTS (not to change)
