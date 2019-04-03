@@ -394,6 +394,12 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
     # ----------------------------------------------------EQUILIBRATION-------------------------------------------------
     # Set input PDBs
     pdb_inputs = ["{}".format(os.path.join(pdbout_folder, str(iterations), pdb_file)) for pdb_file in pdb_selected_names]
+    if c.BANNED_DIHEDRALS_ATOMS:
+        pdbs_with_banned_dihedrals = dt.check_folder(folder=os.path.join(pdbout_folder, str(iterations)),
+                                                     threshold=c.BANNED_ANGLE_THRESHOLD,
+                                                     dihedrals=c.BANNED_DIHEDRALS_ATOMS,
+                                                     lig_chain=c_chain, processors=cpus)
+        pdb_inputs = [pdb_file for pdb_file, flag in pdbs_with_banned_dihedrals.items() if flag]
     if not os.path.exists("equilibration_result_{}".format(ID)):  # Create the folder if it does not exist
         os.mkdir("equilibration_result_{}".format(ID))
     # Modify the control file to increase the steps to 20 and change the output path
