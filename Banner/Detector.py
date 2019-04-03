@@ -40,7 +40,10 @@ class Detector:
         dihedral_list = self.select_atoms()
         dihedral_results = []
         for dihedral in dihedral_list:
-            dihedral_angle = prody.calcDihedral(dihedral[0], dihedral[1], dihedral[2], dihedral[3])
+            atoms = []
+            for atom in dihedral:
+                atoms.append(atom)
+            dihedral_angle = prody.calcDihedral(atoms[0], atoms[1], atoms[2], atoms[3])
             dihedral_results.append(dihedral_angle)
         return dihedral_results
 
