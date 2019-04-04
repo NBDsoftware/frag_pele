@@ -33,10 +33,17 @@ class Detector:
         dihedral_list = []
         for dihedral in self.dihedrals:
             atoms = ligand.select("name {} {} {} {}".format(dihedral[0], dihedral[1], dihedral[2], dihedral[3]))
-            dihedral_list.append(atoms)
+            new_list = []
+            for atom in dihedral:
+                for atom2 in atoms:
+                    if atom == atom2.getName():
+                        new_list.append(atom2)
+                        break
+            dihedral_list.append(new_list)
         return dihedral_list
 
     def read_dihedral(self):
+
         dihedral_list = self.select_atoms()
         dihedral_results = []
         for dihedral in dihedral_list:
@@ -49,6 +56,7 @@ class Detector:
 
     def check_threshold_dihedral(self):
         value_list = self.read_dihedral()
+        print(self.pdb, value_list)
         check = True
         for value in value_list:
             if abs(self.threshold) < value:
