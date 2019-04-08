@@ -128,6 +128,9 @@ def parse_arguments():
                         help="Temperature value to add in the control file. If the temperature is high more steps of "
                              "PELE will be accepted when applying the Metropolis Criteria. "
                              "By default = {}".format(c.TEMPERATURE))
+    parser.add_argument("-sd", "--seed", default=c.SEED,
+                        help="Seed to get the random numbers that will be used in the PELE simulation"
+                             "By default = {}".format(c.SEED))
 
     # Clustering related arguments
     parser.add_argument("-dis", "--distcont", default=c.DISTANCE_COUNTER,
@@ -169,7 +172,7 @@ def parse_arguments():
 def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
          pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distance_contact, clusterThreshold,
          epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID,
-         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000):
+         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000, seed=1279183):
     """
     Description: FrAG is a Fragment-based ligand growing software which performs automatically the addition of several
     fragments to a core structure of the ligand in a protein-ligand complex.
@@ -349,12 +352,12 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
         if i != 0:
             simulation_file = Growing.simulations_linker.control_file_modifier(contrl, pdb_input_paths, i, license, overlapping_factor,
                                                              result, steps=steps, chain=c_chain, constraints=const, center=center,
-                                                                               temperature=temperature)
+                                                             temperature=temperature, seed=seed)
         else:
             logger.info(c.SELECTED_MESSAGE.format(contrl, pdb_initialize, result, i))
             simulation_file = Growing.simulations_linker.control_file_modifier(contrl, [pdb_initialize], i, license, overlapping_factor,
                                                              result, steps=steps, chain=c_chain, constraints=const, center=center,
-                                                                               temperature=temperature)
+                                                             temperature=temperature, seed=seed)
                                                                      #  We have put [] in pdb_initialize
                                                                      #  because by default we have to use
                                                                      #  a list as input
@@ -364,7 +367,7 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
                                              template_grown_path=os.path.join(path_to_templates_generated, template_final),
                                              step=i+1, total_steps=iterations, hydrogen_to_replace=replacement_atom,
                                              core_atom_linker=core_atom,
-                                             tmpl_out_path=os.path.join(path_to_templates,template_final))
+                                             tmpl_out_path=os.path.join(path_to_templates, template_final))
 
 #        elif i+1 == iterations:
 #            shutil.copy(os.path.join(path_to_templates_generated, template_final), os.path.join(path_to_templates,
