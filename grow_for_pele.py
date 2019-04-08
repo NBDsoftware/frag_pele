@@ -491,7 +491,7 @@ if __name__ == '__main__':
                 main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
                  pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon,
                  condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID, h_core,
-                 h_frag, c_chain, f_chain, steps, temperature)
+                 h_frag, c_chain, f_chain, steps, temperature, seed)
             except Exception:
                 traceback.print_exc()
     if docontrolsim:
