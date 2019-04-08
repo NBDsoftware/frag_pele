@@ -166,7 +166,7 @@ def parse_arguments():
            args.resfold, args.report, args.traject, args.pdbout, args.cpus, \
            args.distcont, args.threshold, args.epsilon, args.condition, args.metricweights, args.nclusters, \
            args.pele_eq_steps, args.restart, args.min_overlap, args.max_overlap, args.serie_file, \
-           args.c_chain, args.f_chain, args.docontrolsim, args.steps, args.temperature
+           args.c_chain, args.f_chain, args.docontrolsim, args.steps, args.temperature, args.seed
 
 
 def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
@@ -408,7 +408,8 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
     # Modify the control file to increase the steps to 20 and change the output path
     simulation_file = Growing.simulations_linker.control_file_modifier(contrl, pdb_inputs, iterations, license, max_overlap,
                                                      "equilibration_result_{}".format(ID), steps=pele_eq_steps, chain=c_chain,
-                                                     constraints=const, center=center, temperature=temperature)
+                                                     constraints=const, center=center, temperature=temperature,
+                                                     seed=seed)
     # Call PELE to run the simulation
     if not (restart and os.path.exists("selected_result_{}".format(ID))):
         logger.info(".....STARTING EQUILIBRATION.....")
@@ -431,7 +432,7 @@ if __name__ == '__main__':
     complex_pdb, iterations, criteria, plop_path, sch_python, pele_dir, \
     contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon, condition, metricweights, \
     nclusters, pele_eq_steps, restart, min_overlap, max_overlap, serie_file, \
-    c_chain, f_chain, docontrolsim, steps, temperature = parse_arguments()
+    c_chain, f_chain, docontrolsim, steps, temperature, seed = parse_arguments()
 
     list_of_instructions = sh.read_instructions_from_file(serie_file)
     print("READING INSTRUCTIONS... You will perform the growing of {} fragments. GOOD LUCK and ENJOY the trip :)".format(len(list_of_instructions)))
@@ -467,7 +468,7 @@ if __name__ == '__main__':
                     main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path,
                      sch_python,pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont,
                      threshold, epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap,
-                     max_overlap, ID, h_core, h_frag, c_chain, f_chain, steps, temperature)
+                     max_overlap, ID, h_core, h_frag, c_chain, f_chain, steps, temperature, seed)
 
                 except Exception:
                     traceback.print_exc()
