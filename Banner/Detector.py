@@ -56,7 +56,6 @@ class Detector:
 
     def check_threshold_dihedral(self):
         value_list = self.read_dihedral()
-        print(value_list)
         check = True
         for value in value_list:
             if abs(self.threshold) > value:
