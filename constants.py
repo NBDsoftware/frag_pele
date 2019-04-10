@@ -51,12 +51,13 @@ TEMPERATURE = 1000
 MAX_OVERLAP = 0.70
 MIN_OVERLAP = 0.50
 SEED = 1279183
+ROTRES = "10.0"
 # Clustering parameters
 DISTANCE_COUNTER = 4
 CONTACT_THRESHOLD = 0.3
 EPSILON = 0.5
 BANNED_DIHEDRALS_ATOMS = [["G17", "G2", "G0", "G1"], ["G6", "G5", "G7", "G22"]]
-BANNED_ANGLE_THRESHOLD = 30
+BANNED_ANGLE_THRESHOLD = 170
 ##############################################
 
 # PRIVATE CONSTANTS (not to change)
@@ -68,7 +69,6 @@ OUTPUT_FOLDER = "growing_results/"
 TEMPLATES_FOLDER = "growing_templates"
 CONFIG_PATH = "log_configure.ini"
 PLOP_PATH = "PlopRotTemp_S_2017/ligand_prep.py"
-ROTRES = 30
 # Clustering constants
 CONDITION = "min"   #   min or max
 METRICS_WEIGHTS = "linear"
