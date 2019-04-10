@@ -95,6 +95,9 @@ def parse_arguments():
     parser.add_argument("-sp", "--sch_python", default=c.SCHRODINGER_PY_PATH,
                         help="""Absolute path to Schrödinger's python. 
                         By default = {}""".format(c.SCHRODINGER_PY_PATH))
+    parser.add_argument("-rot", "--rotamers", default=c.ROTRES, type=str,
+                        help="""Rotamers threshold used in the rotamers' library. 
+                            By default = {}""".format(c.ROTRES))
 
     # PELE configuration arguments
     parser.add_argument("-d", "--pele_dir", default=c.PATH_TO_PELE,
@@ -166,13 +169,13 @@ def parse_arguments():
            args.resfold, args.report, args.traject, args.pdbout, args.cpus, \
            args.distcont, args.threshold, args.epsilon, args.condition, args.metricweights, args.nclusters, \
            args.pele_eq_steps, args.restart, args.min_overlap, args.max_overlap, args.serie_file, \
-           args.c_chain, args.f_chain, args.docontrolsim, args.steps, args.temperature, args.seed
+           args.c_chain, args.f_chain, args.docontrolsim, args.steps, args.temperature, args.seed, args.rotamers
 
 
 def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
          pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distance_contact, clusterThreshold,
          epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID,
-         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000, seed=1279183):
+         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000, seed=1279183, rotamers=30):
     """
     Description: FrAG is a Fragment-based ligand growing software which performs automatically the addition of several
     fragments to a core structure of the ligand in a protein-ligand complex.
@@ -276,8 +279,8 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
     # Create the templates for the initial and final structures
     template_resnames = []
     for pdb_to_template in [pdb_to_initial_template, pdb_to_final_template]:
-        cmd = "{} {} {}".format(sch_python, plop_relative_path, os.path.join(curr_dir,
-                                  Growing.add_fragment_from_pdbs.c.PRE_WORKING_DIR, pdb_to_template))
+        cmd = "{} {} {} {}".format(sch_python, plop_relative_path, os.path.join(curr_dir,
+                                  Growing.add_fragment_from_pdbs.c.PRE_WORKING_DIR, pdb_to_template), c.ROTRES)
         new_env = os.environ.copy()
         new_env["PYTHONPATH"] = c.ENV_PYTHON2
         subprocess.call(cmd.split(), env=new_env)
@@ -432,7 +435,7 @@ if __name__ == '__main__':
     complex_pdb, iterations, criteria, plop_path, sch_python, pele_dir, \
     contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon, condition, metricweights, \
     nclusters, pele_eq_steps, restart, min_overlap, max_overlap, serie_file, \
-    c_chain, f_chain, docontrolsim, steps, temperature, seed = parse_arguments()
+    c_chain, f_chain, docontrolsim, steps, temperature, seed, rotamers = parse_arguments()
 
     list_of_instructions = sh.read_instructions_from_file(serie_file)
     print("READING INSTRUCTIONS... You will perform the growing of {} fragments. GOOD LUCK and ENJOY the trip :)".format(len(list_of_instructions)))
@@ -468,7 +471,7 @@ if __name__ == '__main__':
                     main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path,
                      sch_python,pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont,
                      threshold, epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap,
-                     max_overlap, ID, h_core, h_frag, c_chain, f_chain, steps, temperature, seed)
+                     max_overlap, ID, h_core, h_frag, c_chain, f_chain, steps, temperature, seed, rotamers)
 
                 except Exception:
                     traceback.print_exc()
@@ -491,7 +494,7 @@ if __name__ == '__main__':
                 main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
                  pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon,
                  condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID, h_core,
-                 h_frag, c_chain, f_chain, steps, temperature, seed)
+                 h_frag, c_chain, f_chain, steps, temperature, seed, rotamers)
             except Exception:
                 traceback.print_exc()
     if docontrolsim:

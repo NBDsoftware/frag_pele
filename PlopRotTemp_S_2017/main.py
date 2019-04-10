@@ -64,7 +64,8 @@ from template.templateBuilder import TemplateBuilder
 
 
 
-def main(mae_file, max_tors=4, nrot=1000, user_core_atom=-1, mae_charges = False, clean = False, out_temp=".", out_rot="."):
+def main(mae_file, max_tors=-1, nrot=1000, user_core_atom=-1, mae_charges = False, clean = False, out_temp=".",
+         out_rot=".", gridres="10.0"):
 
     #Defaults
     nrot = nrot
@@ -74,7 +75,7 @@ def main(mae_file, max_tors=4, nrot=1000, user_core_atom=-1, mae_charges = False
     debug = 0  # 1 means don't run exteral commands (assumes output is already there)
     conf_file = 'none';
     output_template_file = ""
-    gridres = "10.0"
+    gridres = gridres
     nsamp = 10000
     Ecut = 100
     use_rings = 0
