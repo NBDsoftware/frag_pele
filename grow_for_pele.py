@@ -175,7 +175,7 @@ def parse_arguments():
 def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
          pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distance_contact, clusterThreshold,
          epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID,
-         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000, seed=1279183, rotamers=30):
+         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000, seed=1279183, rotamers="30.0"):
     """
     Description: FrAG is a Fragment-based ligand growing software which performs automatically the addition of several
     fragments to a core structure of the ligand in a protein-ligand complex.
@@ -280,7 +280,8 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
     template_resnames = []
     for pdb_to_template in [pdb_to_initial_template, pdb_to_final_template]:
         cmd = "{} {} {} {}".format(sch_python, plop_relative_path, os.path.join(curr_dir,
-                                  Growing.add_fragment_from_pdbs.c.PRE_WORKING_DIR, pdb_to_template), c.ROTRES)
+                                  Growing.add_fragment_from_pdbs.c.PRE_WORKING_DIR, pdb_to_template), rotamers)
+        print("CMD ===== {}".format(cmd))
         new_env = os.environ.copy()
         new_env["PYTHONPATH"] = c.ENV_PYTHON2
         subprocess.call(cmd.split(), env=new_env)
