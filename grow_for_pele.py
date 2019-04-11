@@ -289,7 +289,6 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
     for pdb_to_template in [pdb_to_initial_template, pdb_to_final_template]:
         cmd = "{} {} {} {}".format(sch_python, plop_relative_path, os.path.join(curr_dir,
                                   Growing.add_fragment_from_pdbs.c.PRE_WORKING_DIR, pdb_to_template), rotamers)
-        print("CMD ===== {}".format(cmd))
         new_env = os.environ.copy()
         new_env["PYTHONPATH"] = c.ENV_PYTHON2
         subprocess.call(cmd.split(), env=new_env)

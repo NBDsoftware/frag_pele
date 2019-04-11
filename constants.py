@@ -10,6 +10,7 @@ DIR = os.path.dirname(__file__)
 # Preparation inputs to grow
 
 machine = socket.getfqdn()
+print(machine)
 if "bsc.mn" in machine:
     # PELE parameters
     PATH_TO_PELE = "/gpfs/projects/bsc72/PELE++/mniv/rev12536/bin/Pele_mpi"
