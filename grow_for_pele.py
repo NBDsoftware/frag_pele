@@ -12,7 +12,6 @@ import traceback
 # Local imports
 import Helpers.clusterizer
 import Helpers.checker
-import Helpers.modify_rotamers
 import Helpers.folder_handler
 import Helpers.runner
 import Helpers.constraints as cs
@@ -161,6 +160,13 @@ def parse_arguments():
     parser.add_argument("-pdbf", "--pdbout", default=c.PDBS_OUTPUT_FOLDER,
                         help="Folder where PDBs selected to spawn in the next GS will be stored."
                              "By default = {}".format(c.PDBS_OUTPUT_FOLDER))
+    parser.add_argument("-ban", "--banned", default=c.BANNED_DIHEDRALS_ATOMS, type=list,
+                        help="List of lists of quartets of PDB atom names that form the banned dihedrals."
+                             "By default = {}".format(c.BANNED_DIHEDRALS_ATOMS))
+    parser.add_argument("-lim", "--limit", default=c.BANNED_ANGLE_THRESHOLD, type=int,
+                        help="Maximum degrees that can accept the banned dihedral."
+                             "By default = {}".format(c.BANNED_ANGLE_THRESHOLD))
+
 
     args = parser.parse_args()
 
@@ -169,13 +175,15 @@ def parse_arguments():
            args.resfold, args.report, args.traject, args.pdbout, args.cpus, \
            args.distcont, args.threshold, args.epsilon, args.condition, args.metricweights, args.nclusters, \
            args.pele_eq_steps, args.restart, args.min_overlap, args.max_overlap, args.serie_file, \
-           args.c_chain, args.f_chain, args.docontrolsim, args.steps, args.temperature, args.seed, args.rotamers
+           args.c_chain, args.f_chain, args.docontrolsim, args.steps, args.temperature, args.seed, args.rotamers, \
+           args.banned, args.limit
 
 
 def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
          pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distance_contact, clusterThreshold,
          epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID,
-         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000, seed=1279183, rotamers="30.0"):
+         h_core=None, h_frag=None, c_chain="L", f_chain="L", steps=6, temperature=1000, seed=1279183, rotamers="30.0",
+         banned=None, limit=None):
     """
     Description: FrAG is a Fragment-based ligand growing software which performs automatically the addition of several
     fragments to a core structure of the ligand in a protein-ligand complex.
@@ -342,10 +350,10 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
         # Otherwise start from the beggining
         pdb_input_paths = ["{}".format(os.path.join(pdbout_folder, str(i-1), pdb_file)) for pdb_file in pdb_selected_names]
         # Banned dihedrals will be checked here
-        if c.BANNED_DIHEDRALS_ATOMS:
+        if banned:
             pdbs_with_banned_dihedrals = dt.check_folder(folder=os.path.join(pdbout_folder, str(i-1)),
-                                                         threshold=c.BANNED_ANGLE_THRESHOLD,
-                                                         dihedrals=c.BANNED_DIHEDRALS_ATOMS,
+                                                         threshold=limit,
+                                                         dihedrals=banned,
                                                          lig_chain=c_chain, processors=cpus)
             pdb_input_paths = [pdb_file for pdb_file, flag in pdbs_with_banned_dihedrals.items() if flag]
 
@@ -401,10 +409,10 @@ def main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criter
     # ----------------------------------------------------EQUILIBRATION-------------------------------------------------
     # Set input PDBs
     pdb_inputs = ["{}".format(os.path.join(pdbout_folder, str(iterations), pdb_file)) for pdb_file in pdb_selected_names]
-    if c.BANNED_DIHEDRALS_ATOMS:
+    if banned:
         pdbs_with_banned_dihedrals = dt.check_folder(folder=os.path.join(pdbout_folder, str(iterations)),
-                                                     threshold=c.BANNED_ANGLE_THRESHOLD,
-                                                     dihedrals=c.BANNED_DIHEDRALS_ATOMS,
+                                                     threshold=limit,
+                                                     dihedrals=banned,
                                                      lig_chain=c_chain, processors=cpus)
         pdb_inputs = [pdb_file for pdb_file, flag in pdbs_with_banned_dihedrals.items() if flag]
     if not os.path.exists("equilibration_result_{}".format(ID)):  # Create the folder if it does not exist
@@ -436,7 +444,7 @@ if __name__ == '__main__':
     complex_pdb, iterations, criteria, plop_path, sch_python, pele_dir, \
     contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon, condition, metricweights, \
     nclusters, pele_eq_steps, restart, min_overlap, max_overlap, serie_file, \
-    c_chain, f_chain, docontrolsim, steps, temperature, seed, rotamers = parse_arguments()
+    c_chain, f_chain, docontrolsim, steps, temperature, seed, rotamers, banned, limit = parse_arguments()
 
     list_of_instructions = sh.read_instructions_from_file(serie_file)
     print("READING INSTRUCTIONS... You will perform the growing of {} fragments. GOOD LUCK and ENJOY the trip :)".format(len(list_of_instructions)))
@@ -470,9 +478,10 @@ if __name__ == '__main__':
                     if "/" in ID:
                         ID = ID.split("/")[-1]
                     main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path,
-                     sch_python,pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont,
-                     threshold, epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap,
-                     max_overlap, ID, h_core, h_frag, c_chain, f_chain, steps, temperature, seed, rotamers)
+                         sch_python,pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont,
+                         threshold, epsilon, condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap,
+                         max_overlap, ID, h_core, h_frag, c_chain, f_chain, steps, temperature, seed, rotamers, banned,
+                         limit)
 
                 except Exception:
                     traceback.print_exc()
@@ -493,9 +502,9 @@ if __name__ == '__main__':
                 h_frag = None
             try:
                 main(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_python,
-                 pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon,
-                 condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID, h_core,
-                 h_frag, c_chain, f_chain, steps, temperature, seed, rotamers)
+                     pele_dir, contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon,
+                     condition, metricweights, nclusters, pele_eq_steps, restart, min_overlap, max_overlap, ID, h_core,
+                     h_frag, c_chain, f_chain, steps, temperature, seed, rotamers, banned, limit)
             except Exception:
                 traceback.print_exc()
     if docontrolsim:
