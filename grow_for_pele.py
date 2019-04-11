@@ -160,7 +160,7 @@ def parse_arguments():
     parser.add_argument("-pdbf", "--pdbout", default=c.PDBS_OUTPUT_FOLDER,
                         help="Folder where PDBs selected to spawn in the next GS will be stored."
                              "By default = {}".format(c.PDBS_OUTPUT_FOLDER))
-    parser.add_argument("-ban", "--banned", default=c.BANNED_DIHEDRALS_ATOMS, type=list,
+    parser.add_argument("-ban", "--banned", default=c.BANNED_DIHEDRALS_ATOMS, type=str, nargs='+', action='append',
                         help="List of lists of quartets of PDB atom names that form the banned dihedrals."
                              "By default = {}".format(c.BANNED_DIHEDRALS_ATOMS))
     parser.add_argument("-lim", "--limit", default=c.BANNED_ANGLE_THRESHOLD, type=int,
