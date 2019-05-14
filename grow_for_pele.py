@@ -167,7 +167,6 @@ def parse_arguments():
                         help="Maximum degrees that can accept the banned dihedral."
                              "By default = {}".format(c.BANNED_ANGLE_THRESHOLD))
 
-
     args = parser.parse_args()
 
     return args.complex_pdb, args.growing_steps, \
@@ -444,7 +443,7 @@ if __name__ == '__main__':
     contrl, license, resfold, report, traject, pdbout, cpus, distcont, threshold, epsilon, condition, metricweights, \
     nclusters, pele_eq_steps, restart, min_overlap, max_overlap, serie_file, \
     c_chain, f_chain, docontrolsim, steps, temperature, seed, rotamers, banned, limit = parse_arguments()
-
+    print(banned)
     list_of_instructions = sh.read_instructions_from_file(serie_file)
     print("READING INSTRUCTIONS... You will perform the growing of {} fragments. GOOD LUCK and ENJOY the trip :)".format(len(list_of_instructions)))
     dict_traceback = corrector.main(complex_pdb)

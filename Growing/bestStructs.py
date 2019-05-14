@@ -34,7 +34,7 @@ FREQ = 1
 REPORT = "report"
 TRAJ = "trajectory"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
-if "life.bsc" in machine:
+if "bsccv" in machine:
     ACCEPTED_STEPS = 'AcceptedSteps'
 DIR = os.path.abspath(os.getcwd())
 
