@@ -1,7 +1,7 @@
 # must do: conda-build -c carlesperez94 -c conda-forge -c nostrumbiodiscovery -c rdkit -c omnia -c martimunicoy --python=3.8 . 
 package:
   name: frag_pele
-  version: "3.1.0"
+  version: "3.1.1"
 
 about:
   home: https://github.com/carlesperez94/frag_pele
