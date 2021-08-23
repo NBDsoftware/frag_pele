@@ -3,7 +3,7 @@ import frag_pele.constants as c
 from frag_pele.Errors.custom_errors import WrongComplexName
 
 
-class Parametrizer:
+class ParametrsBuilder(object):
     """
 
     """
@@ -74,7 +74,8 @@ class Parametrizer:
             srun=True,
             keep_templates=False):
         """
-        Initializes parametrization to obtain FragPELE instructions and proceed with fragment growing.
+        It build the parameters for FrAG PELE, according to the argument that are supplied and
+        return the corresponding parameters.
 
         Parameters
         ----------
@@ -150,9 +151,11 @@ class Parametrizer:
             self._list_of_instructions)
         self._steps, self._pele_eq_steps, self._temp = self._define_protocol_params(protocol, test)
 
+
+
     def _define_protocol_params(self, protocol, test):
         """
-        Checks protocol type and assigns steps, pele quilibration steps and temperature parameters.
+        Checks protocol type and assigns steps, pele equilibration steps and temperature parameters.
 
         Parameters
         ----------
