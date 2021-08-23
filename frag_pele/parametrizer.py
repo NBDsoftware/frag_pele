@@ -1,13 +1,10 @@
 import os.path
+import os
 import frag_pele.constants as c
 from frag_pele.Errors.custom_errors import WrongComplexName
 
 
-class ParametersBuilder(object):
-    """
-
-    """
-
+class ParametersBuilder():
     def __init__(
             self,
             complex_pdb,
@@ -28,7 +25,7 @@ class ParametersBuilder(object):
             threshold=c.CONTACT_THRESHOLD,
             epsilon=c.EPSILON,
             condition=c.CONDITION,
-            metricweights=c.METRIC_WEIGHTS,
+            metricweights=c.METRICS_WEIGHTS,
             nclusters=c.NUM_CLUSTERS,
             pele_eq_steps=c.PELE_EQ_STEPS,
             restart=False,
@@ -48,7 +45,7 @@ class ParametersBuilder(object):
             steering=c.STEERING,
             translation_high=c.TRANSLATION_HIGH,
             rotation_high=c.ROTATION_HIGH,
-            translation_low=c.TRANSLATOIN_LOW,
+            translation_low=c.TRANSLATION_LOW,
             rotation_low=c.ROTATION_LOW,
             explorative=False,
             radius_box=c.RADIUS_BOX,
@@ -143,14 +140,13 @@ class ParametersBuilder(object):
         srun
         keep_templates
         """
-        self.original_dir = os.path.abspath(os.getcwd())
-        self._list_of_instructions = self._read_instructions_form_file(serie_file)
+        self._original_dir = os.path.abspath(os.getcwd())
+        self._list_of_instructions = self._read_instructions_from_file(serie_file)
         # self.dict_traceback
-        self._ID = self._extract_id(path)
+        self._ID = self._extract_id(self._list_of_instructions)
         self._core_atom, self._h_core, self._fragment_atom, self._h_frag = self._extract_linker_atoms(
             self._list_of_instructions)
         self._steps, self._pele_eq_steps, self._temp = self._define_protocol_params(protocol, test)
-
 
 
     def _define_protocol_params(self, protocol, test):
@@ -184,7 +180,7 @@ class ParametersBuilder(object):
 
         return steps, pele_eq_steps, temp
 
-    def _read_instructions_form_file(self, file):
+    def _read_instructions_from_file(self, file):
         """
         From the serie file reads the instructions.
         Parameters
@@ -252,7 +248,7 @@ class ParametersBuilder(object):
 
         """
         try:
-            id = path.split("/")[-1]
+            id = os.path.split("/")[-1]
             return id
         except AssertionError:
             raise WrongComplexName(f"Incorrect format of complex path: " +
