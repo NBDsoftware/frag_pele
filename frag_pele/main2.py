@@ -261,7 +261,7 @@ def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_p
     -------
 
     """
-    from frag_pele import ParametrsBuilder
+    from frag_pele.parametrizer import ParametersBuilder
 
     # Initialize parameters
     parameters = ParametersBuilder.__init__(complex_pdb, serie_file, iterations, criteria, plop_path, sch_path, pele_dir, contrl, license, resfold,
@@ -296,22 +296,22 @@ def main(args):
     -------
 
     """
-    run_fragpele(complex_pdb = args.complex_pdb, serie_file = args.serie_file, iterations = args.iterations,
+    run_fragpele(complex_pdb = args.complex_pdb, serie_file = args.serie_file, iterations = args.growing_steps,
                  criteria = args.criteria, plop_path = args.plop_path, sch_path = args.sch_path,
                  pele_dir = args.pele_dir, contrl = args.contrl, license = args.license, resfold = args.resfold,
-                 report = args.report, traject = args.traject, pdbout = args.pdbout, cpus = args.cpus, distcont = args.discont,
+                 report = args.report, traject = args.traject, pdbout = args.pdbout, cpus = args.cpus, distcont = args.distcont,
                  threshold = args.threshold, epsilon = args.epsilon, condition = args.condition, metricweights = args.metricweights,
                  nclusters = args.nclusters, pele_eq_steps = args.pele_eq_steps, restart = args.restart, min_overlap = args.min_overlap,
                  max_overlap = args.max_overlap, c_chain = args.c_chain, f_chain = args.f_chain, steps = args.steps,
                  temperature = args.temperature, seed = args.seed, rotamers = args.rotamers, banned = args.banned,
-                 limit = args.limit, mae = args.mae, rename = args.rename, threshold_clash = args.threshold_clash, steering = args.steering,
+                 limit = args.limit, mae = args.mae, rename = args.rename, threshold_clash = args.clash_thr, steering = args.steering,
                  translation_high = args.translation_high, rotation_high = args.rotation_high, translation_low = args.translation_low,
                  rotation_low = args.rotation_low, explorative = args.explorative, radius_box = args.radius_box,
                  sampling_control = args.sampling_control, data = args.data, documents = args.documents, only_prepare = args.only_prepare,
                  only_grow = args.only_grow, no_check = args.no_check, debug = args.debug, test = args.test, cov_res = args.cov_res,
-                 dist_constraint = args.dist_contraint, constraint_core = args.contraint_core, dih_constr = args.dih_constr,
-                 protocol = args.protocol, start_growing_from = args.start_growing_from, min_grow = args.min_grow, min_sampling = args.min_sampling,
-                 force_field = args.forcefield, dih_to_constraint = args.dih_to_constraint, srun = args.srun, keep_templates = args.keep_templates)
+                 dist_constraint = args.dist_const, constraint_core = args.constraint_core, dih_constr = args.dih_constr,
+                 protocol = args.protocol, start_growing_from = args.st_from, min_grow = args.min_grow, min_sampling = args.min_sampling,
+                 force_field = args.force_field, dih_to_constraint = args.dihedrals_list, srun = args.srun, keep_templates = args.keep_templates)
 
 
 if __name__ == "__main__":
