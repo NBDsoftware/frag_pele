@@ -264,15 +264,7 @@ def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_p
     from frag_pele.parametrizer import ParametersBuilder
 
     # Initialize parameters
-    parameters = ParametersBuilder(complex_pdb, serie_file, iterations, criteria, plop_path, sch_path, pele_dir, contrl, license, resfold,
-         report, traject, pdbout, cpus, distcont, threshold, epsilon, condition, metricweights,
-         nclusters, pele_eq_steps, restart, min_overlap, max_overlap,
-         c_chain, f_chain, steps, temperature, seed, rotamers, banned, limit, mae,
-         rename, threshold_clash, steering, translation_high, rotation_high,
-         translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
-         only_prepare, only_grow, no_check, debug, test, cov_res, dist_constraint, constraint_core,
-         dih_constr, protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun,
-         keep_templates)
+    parameters = ParametersBuilder(serie_file, protocol, test)
 
     # Preparation
 
