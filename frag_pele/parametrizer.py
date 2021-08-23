@@ -3,7 +3,7 @@ import frag_pele.constants as c
 from frag_pele.Errors.custom_errors import WrongComplexName
 
 
-class ParametrsBuilder(object):
+class ParametersBuilder(object):
     """
 
     """
