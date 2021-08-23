@@ -7,138 +7,27 @@ from frag_pele.Errors.custom_errors import WrongComplexName
 class ParametersBuilder():
     def __init__(
             self,
-            complex_pdb,
             serie_file,
-            iterations=c.GROWING_STEPS,
-            criteria=c.SELECTION_CRITERIA,
-            plop_path=c.PLOP_PATH,
-            sch_path=c.SCHRODINGER,
-            pele_dir=c.PATH_TO_PELE,
-            contrl=c.CONTROL_TEMPLATE,
-            license=c.PATH_TO_LICENSE,
-            resfold=c.RESULTS_FOLDER,
-            report=c.REPORT_NAME,
-            traject=c.TRAJECTORY_NAME,
-            pdbout=c.PDBS_OUTPUT_FOLDER,
-            cpus=c.CPUS,
-            distcont=c.DISTANCE_COUNTER,
-            threshold=c.CONTACT_THRESHOLD,
-            epsilon=c.EPSILON,
-            condition=c.CONDITION,
-            metricweights=c.METRICS_WEIGHTS,
-            nclusters=c.NUM_CLUSTERS,
-            pele_eq_steps=c.PELE_EQ_STEPS,
-            restart=False,
-            min_overlap=c.MIN_OVERLAP,
-            max_overlap=c.MAX_OVERLAP,
-            c_chain="L",
-            f_chain="L",
-            steps=c.STEPS,
-            temperature=c.TEMPERATURE,
-            seed=c.SEED,
-            rotamers=c.ROTRES,
-            banned=c.BANNED_DIHEDRALS_ATOMS,
-            limit=c.BANNED_ANGLE_THRESHOLD,
-            mae=False,
-            rename=None,
-            threshold_clash=None,
-            steering=c.STEERING,
-            translation_high=c.TRANSLATION_HIGH,
-            rotation_high=c.ROTATION_HIGH,
-            translation_low=c.TRANSLATION_LOW,
-            rotation_low=c.ROTATION_LOW,
-            explorative=False,
-            radius_box=c.RADIUS_BOX,
-            sampling_control=None,
-            data=c.PATH_TO_PELE_DATA,
-            documents=c.PATH_TO_PELE_DOCUMENTS,
-            only_prepare=False,
-            only_grow=False,
-            no_check=False,
-            debug=False,
             protocol=False,
-            test=False,
-            cov_res=None,
-            dist_constraint=None,
-            contraint_core=False,
-            dih_constr=None,
-            growing_protocol='SoftcoreLike',
-            strat_growing_from=0.0,
-            min_grow=0.01,
-            min_sampling=0.1,
-            force_field='OPLS2005',
-            dih_to_constraint=None,
-            srun=True,
-            keep_templates=False):
+            test=False):
         """
-        It build the parameters for FrAG PELE, according to the argument that are supplied and
+        It builds the parameters for FrAG PELE, according to the argument that are supplied and
         return the corresponding parameters.
 
         Parameters
         ----------
-        complex_pdb
-        serie_file
-        iterations
-        criteria
-        plop_path
-        sch_path
-        pele_dir
-        contrl
-        license
-        resfold
-        report
-        traject
-        pdbout
-        cpus
-        distcont
-        threshold
-        epsilon
-        condition
-        metricweights
-        nclusters
-        pele_eq_steps
-        restart
-        min_overlap
-        max_overlap
-        c_chain
-        f_chain
-        steps
-        temperature
-        seed
-        rotamers
-        banned
-        limit
-        mae
-        rename
-        threshold_clash
-        steering
-        translation_high
-        rotation_high
-        translation_low
-        rotation_low
-        explorative
-        radius_box
-        sampling_control
-        data
-        documents
-        only_prepare
-        only_grow
-        no_check
-        debug
+        serie_file : str
+           Name of the tabular file which must contain the instructions required to perform several
+           successive growings, using different fragments or different growing positions.
         protocol
-        test
-        cov_res
-        dist_constraint
-        contraint_core
-        dih_constr
-        growing_protocol
-        strat_growing_from
-        min_grow
-        min_sampling
-        force_field
-        dih_to_constraint
-        srun
-        keep_templates
+           Select growing protocol. Choose between: 'SofcoreLike', 'SpreadingHcharge', 'AllLinear'.
+           SofcoreLike: Charges initially set to 0. They are added in the mid GS. Then, they grow exponentially
+           or linearly (depending on your settings).
+           SpreadingHcharge: reimplementation of FragPELE1.0.0 methodology.
+           AllLinear: All FF parameters are linearly and equally incremented in each GS.
+        test : bool
+           Run test config
+
         """
         self._original_dir = os.path.abspath(os.getcwd())
         self._list_of_instructions = self._read_instructions_from_file(serie_file)
