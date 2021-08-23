@@ -1,0 +1,2 @@
+class WrongComplexName(Exception):
+    pass
