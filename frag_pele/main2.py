@@ -6,12 +6,13 @@ def parse_args(args):
     Command line patser.
     Parameters
     ----------
-    args: list[str]
+    args : list[str]
        The list of strings to parse. Default is an empty list.
        If empty, input arguments are retrieve from the command-line.
 
     Returns
     -------
+    parsed_args : 
 
     """
     from argparse import ArgumentParser
@@ -248,10 +249,11 @@ def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_p
     """
     Main function to prepare and launch the simulation.
     1) Create variables
-    2) Prepare ligand and growing results.
-    3) Launch fragment growing simulations.
-    4) Clustering.
-    5) Equilibration.
+    2) Create folders and define paths
+    3) Prepare ligand and growing results.
+    4) Launch fragment growing simulations.
+    5) Clustering.
+    6) Equilibration.
 
     Parameters
     ----------
@@ -262,11 +264,39 @@ def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_p
 
     """
     from frag_pele.parametrizer import ParametersBuilder
+    from logging.config import fileConfig
+    import logging
+    import time
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "AdaptivePELE_repo"))
+
+    # Calling configuration file for log system
+    FilePath = os.path.abspath(__file__)
+    PackagePath = os.path.dirname(FilePath)
+    LogPath = os.path.join(PackagePath, c.CONFIG_PATH)
+    fileConfig(LogPath)
+
+    # Getting the name of the module for the log system
+    logger = logging.getLogger(__name__)
+
+    # Start timer
+    start_time = time.time()
 
     # Initialize parameters
     parameters = ParametersBuilder(serie_file, protocol, test)
 
+    # Define Paths
+    paths = PathHandler(PackagePath,
+                        plop_path,
+                        sch_path,
+                        complex_pdb,
+                        pdbout,
+                        force_field,
+                        data,
+                        documents)
+
     # Preparation
+
 
     # Growing
 
@@ -281,10 +311,6 @@ def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_p
 def main(args):
     """
     Reads the command-line arguments and runs FragPELE.
-
-    Returns
-    -------
-
     """
     run_fragpele(complex_pdb = args.complex_pdb, serie_file = args.serie_file, iterations = args.growing_steps,
                  criteria = args.criteria, plop_path = args.plop_path, sch_path = args.sch_path,
