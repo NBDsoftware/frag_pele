@@ -78,7 +78,7 @@ class ParametersBuilder():
 
         Returns
         -------
-        listo_of_instructions
+        list_of_instructions
 
         """
         list_of_instructions = []
