@@ -1,4 +1,6 @@
 import frag_pele.constants as c
+from frag_pele.args_parser import ArgsParser
+import os
 
 
 def parse_args(args):
@@ -237,15 +239,7 @@ def parse_args(args):
     return parsed_args
 
 
-def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_path, pele_dir, contrl, license, resfold,
-         report, traject, pdbout, cpus, distcont, threshold, epsilon, condition, metricweights,
-         nclusters, pele_eq_steps, restart, min_overlap, max_overlap,
-         c_chain, f_chain, steps, temperature, seed, rotamers, banned, limit, mae,
-         rename, threshold_clash, steering, translation_high, rotation_high,
-         translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
-         only_prepare, only_grow, no_check, debug, test, cov_res, dist_constraint, constraint_core,
-         dih_constr, protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun,
-         keep_templates):
+def run_fragpele(parameters):
     """
     Main function to prepare and launch the simulation.
     1) Create variables
@@ -264,6 +258,8 @@ def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_p
 
     """
     from frag_pele.parametrizer import ParametersBuilder
+    from frag_pele.Growing.reduction import FragmentReduction
+    from frag_pele.Helpers.path import PathHandler
     from logging.config import fileConfig
     import logging
     import time
@@ -283,20 +279,32 @@ def run_fragpele(complex_pdb, serie_file, iterations, criteria, plop_path, sch_p
     start_time = time.time()
 
     # Initialize parameters
-    parameters = ParametersBuilder(serie_file, protocol, test)
+    sim_parameters = ParametersBuilder(parameters.serie_file, parameters.protocol, parameters.test)
+    breakpoint()
 
     # Define Paths
     paths = PathHandler(PackagePath,
-                        plop_path,
-                        sch_path,
-                        complex_pdb,
-                        pdbout,
-                        force_field,
-                        data,
-                        documents)
+                        parameters.plop_path,
+                        parameters.sch_path,
+                        parameters.complex_pdb,
+                        parameters.pdbout,
+                        parameters.force_field,
+                        sim_parameters._ID,
+                        parameters.dist_constraint,
+                        parameters.data,
+                        parameters.documents)
 
     # Preparation
+    #    a) Fragment reduction
+    reduction = FragmentReduction(parameters.iterations, parameters.start_growing_from)
+    print(f"Reducing fragment size to the {reduction._lam_initial * 100} %")
 
+    #    b) Fragment Merging
+
+    #    c) Create Templates
+    #    d) Get Templates
+    #    e) Set box center from ligand COM
+    #    f) Correct Templates
 
     # Growing
 
@@ -312,25 +320,11 @@ def main(args):
     """
     Reads the command-line arguments and runs FragPELE.
     """
-    run_fragpele(complex_pdb = args.complex_pdb, serie_file = args.serie_file, iterations = args.growing_steps,
-                 criteria = args.criteria, plop_path = args.plop_path, sch_path = args.sch_path,
-                 pele_dir = args.pele_dir, contrl = args.contrl, license = args.license, resfold = args.resfold,
-                 report = args.report, traject = args.traject, pdbout = args.pdbout, cpus = args.cpus, distcont = args.distcont,
-                 threshold = args.threshold, epsilon = args.epsilon, condition = args.condition, metricweights = args.metricweights,
-                 nclusters = args.nclusters, pele_eq_steps = args.pele_eq_steps, restart = args.restart, min_overlap = args.min_overlap,
-                 max_overlap = args.max_overlap, c_chain = args.c_chain, f_chain = args.f_chain, steps = args.steps,
-                 temperature = args.temperature, seed = args.seed, rotamers = args.rotamers, banned = args.banned,
-                 limit = args.limit, mae = args.mae, rename = args.rename, threshold_clash = args.clash_thr, steering = args.steering,
-                 translation_high = args.translation_high, rotation_high = args.rotation_high, translation_low = args.translation_low,
-                 rotation_low = args.rotation_low, explorative = args.explorative, radius_box = args.radius_box,
-                 sampling_control = args.sampling_control, data = args.data, documents = args.documents, only_prepare = args.only_prepare,
-                 only_grow = args.only_grow, no_check = args.no_check, debug = args.debug, test = args.test, cov_res = args.cov_res,
-                 dist_constraint = args.dist_const, constraint_core = args.constraint_core, dih_constr = args.dih_constr,
-                 protocol = args.protocol, start_growing_from = args.st_from, min_grow = args.min_grow, min_sampling = args.min_sampling,
-                 force_field = args.force_field, dih_to_constraint = args.dihedrals_list, srun = args.srun, keep_templates = args.keep_templates)
-
+    parameters = ArgsParser(args)
+    run_fragpele(parameters)
 
 if __name__ == "__main__":
     import sys
     args = parse_args(sys.argv[1:])
+    parameters = ArgsParser(args)
     main(args)
