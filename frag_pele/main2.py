@@ -280,7 +280,6 @@ def run_fragpele(parameters):
 
     # Initialize parameters
     sim_parameters = ParametersBuilder(parameters.serie_file, parameters.protocol, parameters.test)
-    breakpoint()
 
     # Define Paths
     paths = PathHandler(PackagePath,
