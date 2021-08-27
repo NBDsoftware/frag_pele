@@ -260,6 +260,7 @@ def run_fragpele(parameters):
     from frag_pele.parametrizer import ParametersBuilder
     from frag_pele.Growing.reduction import FragmentReduction
     from frag_pele.Helpers.path import PathHandler
+    from frag_pele.Growing.pdbs import PDBHandler
     from logging.config import fileConfig
     import logging
     import time
@@ -299,6 +300,10 @@ def run_fragpele(parameters):
     print(f"Reducing fragment size to the {reduction._lam_initial * 100} %")
 
     #    b) Fragment Merging
+    PDBHandler(parameters.complex_pdb,
+               sim_parameters._fragment_pdb,
+               sim_parameters._core_atom,
+               sim_parameters._fragment_atom)
 
     #    c) Create Templates
     #    d) Get Templates
