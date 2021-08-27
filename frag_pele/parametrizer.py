@@ -33,7 +33,7 @@ class ParametersBuilder():
         self._list_of_instructions = self._read_instructions_from_file(serie_file)
         # self.dict_traceback
         self._ID = self._extract_id(self._list_of_instructions)
-        self._core_atom, self._h_core, self._fragment_atom, self._h_frag = self._extract_linker_atoms(
+        self._fragment_pdb, self._core_atom, self._h_core, self._fragment_atom, self._h_frag = self._extract_linker_atoms(
             self._list_of_instructions)
         self._steps, self._pele_eq_steps, self._temp = self._define_protocol_params(protocol, test)
 
@@ -192,9 +192,17 @@ class ParametersBuilder():
                 pass
             elif type(instruction) != list:
                 if self._are_hydrogens_user_defined(instruction):
-                    core_atom, h_core, fragment_atom, h_frag = instruction[0], instruction[1], instruction[2], instruction[3]
-                    return core_atom, h_core, fragment_atom, h_frag
+                    fragment_pdb, core_atom, h_core, \
+                    fragment_atom, h_frag = instruction[0], \
+                                            instruction[1].split("-")[0],\
+                                            instruction[1].split("-")[1], \
+                                            instruction[2].split("-")[0], \
+                                            instruction[2].split("-")[0]
+
+                    return ragment_pdb, core_atom, h_core, fragment_atom, h_frag
 
                 else:
-                    core_atom, fragment_atom = instruction[1], instruction[2]
-                    return core_atom, None, fragment_atom, None
+                    fragment_pdb, core_atom, fragment_atom = instruction[0],\
+                                                             instruction[1], \
+                                                             instruction[2]
+                    return fragment_pdb, core_atom, None, fragment_atom, None
