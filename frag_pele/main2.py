@@ -298,9 +298,8 @@ def run_fragpele(parameters):
     #    a) Fragment reduction
     reduction = FragmentReduction(parameters.iterations, parameters.start_growing_from)
     print(f"Reducing fragment size to the {reduction._lam_initial * 100} %")
-
     #    b) Fragment Merging
-    PDBHandler(parameters.complex_pdb,
+    pdbs = PDBHandler(parameters.complex_pdb,
                sim_parameters._fragment_pdb,
                sim_parameters._core_atom,
                sim_parameters._fragment_atom)
