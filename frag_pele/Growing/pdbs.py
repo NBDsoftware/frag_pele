@@ -27,6 +27,8 @@ class PDBHandler():
         # Check that ligand names are not repeated
         # Get PDB components
         pdb_ligand = self._get_pdb_components(complex_pdb)
+        # Save PDB
+        self._write_pdb(pdb_ligand)
         # Generate RDKit molecules
         fragment_mol, ligand_mol = self._create_rdkit_molecules(pdb_ligand, pdb_fragment)
         # Join Molecules
@@ -46,9 +48,9 @@ class PDBHandler():
         core_mol : RDKit molecule of initial seed compound.
         framgent_mol : RDKit molecule of fragment.
         """
+        from rdkit import Chem
         fragment_mol = Chem.MolFromPDBFile(pdb_fragment)
-        ligand_mol = Chem.MolFromPDBFile(pdb_ligand)
-
+        ligand_mol = Chem.MolFromPDBFile("ligand.pdb")
         return fragment_mol, ligand_mol
 
     def _get_pdb_components(self, complex_pdb):
@@ -58,9 +60,7 @@ class PDBHandler():
         """
         import prody
 
-        pdb = prody.parsePDB(complex_pdb)
-        # protein = pdb.select('protein')
-        ligand = pdb.select('not protein and not water')
+        ligand = prody.parsePDB(complex_pdb, chain='Z')
         return ligand
 
     def _merge_ligand_and_fragment(self, fragment_mol, ligand_mol, pdb_atom_core_name, pdb_atom_fragment_name):
@@ -76,19 +76,32 @@ class PDBHandler():
         -------
 
         """
+        from rdkit import Chem
         unlinked_molecules = Chem.CombineMols(fragment_mol, ligand_mol)
         mw = Chem.RWMol(unlinked_molecules)
-
         for atom in mw.GetAtoms():
-            if atom.GetPDBResidueInfo() == pdb_atom_core_name:
+            if atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_core_name and atom.GetPDBResidueInfo().GetChainId() != 'Z':
                 ligand_atom_idx = atom.GetIdx()
-            elif atom.GetPDBResidueInfo() == pdb_atom_fragment_name:
+            elif atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_fragment_name and atom.GetPDBResidueInfo().GetChainId() == 'Z':
                 fragment_atom_idx = atom.GetIdx()
-
-        mw.ADDBond(ligand_atom_idx, fragment_atom_idx)
+        mw.AddBond(ligand_atom_idx, fragment_atom_idx)
         Chem.SanitizeMol(mw)
-        smiles = Chem.MolToSmiles(mw)
-        grown_ligand = Chem.MolFromSmiles(smiles)
+        grown_ligand = mw.GetMol()
         return grown_ligand
+
+    def _write_pdb(self, pdb_ligand):
+        """
+        Writes PDB file from extracted ligand with prody.
+
+        Parameters
+        ----------
+        pdb_ligand: prody extracted ligand
+
+        """
+        import prody
+
+        output_pdb_name = f"ligand.pdb"
+        prody.writePDB(f"{output_pdb_name}", pdb_ligand)
+        print(f"wrote {output_pdb_name}")
 
 
