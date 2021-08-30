@@ -199,7 +199,7 @@ class ParametersBuilder():
                                             instruction[2].split("-")[0], \
                                             instruction[2].split("-")[0]
 
-                    return ragment_pdb, core_atom, h_core, fragment_atom, h_frag
+                    return fragment_pdb, core_atom, h_core, fragment_atom, h_frag
 
                 else:
                     fragment_pdb, core_atom, fragment_atom = instruction[0],\
