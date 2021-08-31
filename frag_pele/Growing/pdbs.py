@@ -24,6 +24,7 @@ class PDBHandler():
         """
 
         """
+        self.fragment_atom_names=[]
         # Check that ligand names are not repeated
         # Get PDB components
         pdb_ligand = self._get_pdb_components(complex_pdb)
@@ -33,7 +34,7 @@ class PDBHandler():
         fragment_mol, ligand_mol = self._create_rdkit_molecules(pdb_ligand, pdb_fragment)
         # Join Molecules
         self.grown_ligand = self._merge_ligand_and_fragment(fragment_mol, ligand_mol, pdb_atom_core_name, pdb_atom_fragment_name)
-        self._reduce_molecule_size(self.grown_ligand,0.5)
+        self._reduce_molecule_size(self.grown_ligand,lamda_in)
         breakpoint()
 
     def _create_rdkit_molecules(self, pdb_ligand, pdb_fragment):
@@ -90,10 +91,31 @@ class PDBHandler():
                 fragment_atom_idx = atom.GetIdx()
         mw.AddBond(ligand_atom_idx, fragment_atom_idx)
         Chem.SanitizeMol(mw)
+        for atom in mw.GetAtoms():
+            if atom.GetPDBResidueInfo().GetChainId() != 'Z':
+                self.fragment_atom_names.append(atom.GetPDBResidueInfo().GetName().split()[0])
+        self._check_and_fix_pdb_atom_names(mw)
         smiles = Chem.MolToSmiles(mw)
         grown_ligand = Chem.MolFromSmiles(smiles)
         AllChem.Compute2DCoords(grown_ligand)
         return grown_ligand
+
+    def _check_and_fix_pdb_atom_names(self, molecule):
+        """
+        Checks for repeated PDB atom names. If repeated, changes the mto a unique one.
+        Returns
+        -------
+
+        """
+        names = {}
+        info = Chem.AtomPDBResidueInfo()
+        for atom in molecule.GetAtoms():
+            if atom.GetPDBResidueInfo().GetName().strip()[0] in names:
+                info.SetAtomName('%s%s' % (atom.GetPDBResidueInfo().GetName().strip()[0], str(names[atom.GetPDBResidueInfo().GetName().strip()[0]])+1)))
+                names[atom.GetPDBResidueInfo().GetName().strip()[0]] += 1
+            else:
+                names[atom.GetPDBResidueInfo().GetName().strip()[0]] = 1
+                info.SetAtomName('%s%s' % (atom.GetPDBResidueInfo().GetName().strip()[0],'1'))
 
     def _write_pdb(self, pdb_ligand):
         """
@@ -110,7 +132,7 @@ class PDBHandler():
         prody.writePDB(f"{output_pdb_name}", pdb_ligand)
         print(f"wrote {output_pdb_name}")
 
-    def _reduce_molecule_size(self, molecule, lambda_in=0.5):
+    def _reduce_molecule_size(self, molecule, lambda_in):
         """
         This function performs a reduction of the size of a given residue of a ProDy molecule object.
 
