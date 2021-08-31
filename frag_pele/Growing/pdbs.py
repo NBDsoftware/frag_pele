@@ -77,16 +77,21 @@ class PDBHandler():
 
         """
         from rdkit import Chem
+        from rdkit.Chem import AllChem
+
         unlinked_molecules = Chem.CombineMols(fragment_mol, ligand_mol)
         mw = Chem.RWMol(unlinked_molecules)
         for atom in mw.GetAtoms():
             if atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_core_name and atom.GetPDBResidueInfo().GetChainId() != 'Z':
                 ligand_atom_idx = atom.GetIdx()
+                ligand_mol.GetAtomWithIdx(atom.GetIdx()).SetAtomicNum(0)
             elif atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_fragment_name and atom.GetPDBResidueInfo().GetChainId() == 'Z':
                 fragment_atom_idx = atom.GetIdx()
         mw.AddBond(ligand_atom_idx, fragment_atom_idx)
         Chem.SanitizeMol(mw)
-        grown_ligand = mw.GetMol()
+        smiles = Chem.MolToSmiles(mw)
+        grown_ligand = Chem.MolFromSmiles(smiles)
+        AllChem.Compute2DCoords(grown_ligand)
         return grown_ligand
 
     def _write_pdb(self, pdb_ligand):
