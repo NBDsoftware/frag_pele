@@ -33,7 +33,8 @@ class PDBHandler():
         fragment_mol, ligand_mol = self._create_rdkit_molecules(pdb_ligand, pdb_fragment)
         # Join Molecules
         self.grown_ligand = self._merge_ligand_and_fragment(fragment_mol, ligand_mol, pdb_atom_core_name, pdb_atom_fragment_name)
-
+        self._reduce_molecule_size(self.grown_ligand,0.5)
+        breakpoint()
 
     def _create_rdkit_molecules(self, pdb_ligand, pdb_fragment):
         """
@@ -109,4 +110,78 @@ class PDBHandler():
         prody.writePDB(f"{output_pdb_name}", pdb_ligand)
         print(f"wrote {output_pdb_name}")
 
+    def _reduce_molecule_size(self, molecule, lambda_in=0.5):
+        """
+        This function performs a reduction of the size of a given residue of a ProDy molecule object.
+
+        Parameters
+        ----------
+        molecule: ProDy molecule object.
+        residue: Resname of the residue of the molecule that we want to reduce. string
+        lambda_in: proportion of reduction of the size that we want to apply to the selected residue (between 0 and
+
+        """
+        from rdkit.Geometry import Point3D
+
+        if lambda_in >= 0 and lambda_in <= 1:
+            centroid = self._compute_centroid(molecule)
+            for atom in molecule.GetAtoms():
+                atom_coords = self._get_coords(molecule)[atom.GetIdx()]
+                new_coords = self._move_atom_along_vector(atom_coords, centroid, lambda_in)
+                conf = molecule.GetConformer()
+                x, y, z = new_coords[0], new_coords[1], new_coords[2]
+                conf.SetAtomPosition(atom.GetIdx(), Point3D(x, y, z))
+
+    def _move_atom_along_vector(self, initial_coord, final_coord, position_proportion):
+        """
+        Given two points (atom coordinates), this function moves the initial point a distance of "length of the vector
+        formed by the two coordinates" * "position_proportion" on the vector's direction.
+
+        Parameters
+        ----------
+        initial_coord: initial 3D coordinates (X, Y, Z). numpy.ndarray
+        final_coord: final 3D coordinates (X, Y, Z). numpy.ndarray
+        position_proportion: proportion of movement that we would like to apply on the initial atom on the vector's
+        direction. float(generally between 0 and 1)
+
+        """
+        vector = final_coord - initial_coord
+        new_coords = initial_coord + (position_proportion * vector)
+        return new_coords
+
+    def _get_coords(self, grown_ligand):
+        """
+        Gets coordinates of grown ligand and returns it into an numpy array.
+        Parameters
+        ----------
+        grown_ligand
+
+        Returns
+        -------
+        coords
+
+        """
+        conf = grown_ligand.GetConformer()
+        coords = conf.GetPositions()
+        return coords
+
+    def _compute_centroid(self, molecule):
+        """
+        Given a ProDy molecule, the function extract the coordinates of their atoms and compute the centroid of the
+        molecule.
+        :param molecule: ProDy molecule object.
+        :return: centroid of the molecule, tuple(X,Y,Z).
+        """
+        import numpy as np
+
+        coords = self._get_coords(molecule)
+        x = []
+        y = []
+        z = []
+        for coord in coords:
+            x.append(float(coord[0]))
+            y.append(float(coord[1]))
+            z.append(float(coord[2]))
+        centroid = (np.mean(x), np.mean(y), np.mean(z))
+        return centroid
 
