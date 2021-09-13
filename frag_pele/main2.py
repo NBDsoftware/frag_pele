@@ -297,6 +297,7 @@ def run_fragpele(parameters):
 
     #    b) Fragment Merging and reduction
     grown_ligand = PDBreader._merge_ligand_and_fragment(fragment_mol,ligand_mol,core_atom,fragment_atom)
+    reduced_ligand = PDBreader._reduce_molecule_size(grown_ligand, lam_initial)
 
     #    c) Create Templates
     #    d) Get Templates
