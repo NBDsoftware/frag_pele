@@ -5,11 +5,7 @@ from frag_pele.Errors.custom_errors import WrongComplexName
 
 
 class ParametersBuilder():
-    def __init__(
-            self,
-            serie_file,
-            protocol=False,
-            test=False):
+    def __init__(self):
         """
         It builds the parameters for FrAG PELE, according to the argument that are supplied and
         return the corresponding parameters.
@@ -29,13 +25,13 @@ class ParametersBuilder():
            Run test config
 
         """
-        self._original_dir = os.path.abspath(os.getcwd())
-        self._list_of_instructions = self._read_instructions_from_file(serie_file)
+        #self._original_dir = os.path.abspath(os.getcwd())
+        #self._list_of_instructions = self._read_instructions_from_file(serie_file)
         # self.dict_traceback
-        self._ID = self._extract_id(self._list_of_instructions)
-        self._fragment_pdb, self._core_atom, self._h_core, self._fragment_atom, self._h_frag = self._extract_linker_atoms(
-            self._list_of_instructions)
-        self._steps, self._pele_eq_steps, self._temp = self._define_protocol_params(protocol, test)
+        #self._ID = self._extract_id(self._list_of_instructions)
+        #self._fragment_pdb, self._core_atom, self._h_core, self._fragment_atom, self._h_frag = self._extract_linker_atoms(
+        #    self._list_of_instructions)
+        #self._steps, self._pele_eq_steps, self._temp = self._define_protocol_params(protocol, test)
 
 
     def _define_protocol_params(self, protocol, test):

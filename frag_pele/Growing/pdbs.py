@@ -14,7 +14,7 @@ class PDBHandler():
             this fragment has been size-reduced in order to get small bond
             lengths between its atoms.
     """
-    def __init__(self, complex_pdb, pdb_fragment, pdb_atom_core_name, pdb_atom_fragment_name):
+    def __init__(self):
         from rdkit import Chem
         from rdkit.Chem import Draw
         from rdkit.Chem.Draw import rdMolDraw2D
@@ -27,15 +27,15 @@ class PDBHandler():
         self.fragment_atom_names=[]
         # Check that ligand names are not repeated
         # Get PDB components
-        pdb_ligand = self._get_pdb_components(complex_pdb)
+        #pdb_ligand = self._get_pdb_components(complex_pdb)
         # Save PDB
-        self._write_pdb(pdb_ligand)
+        #self._write_pdb(pdb_ligand)
         # Generate RDKit molecules
-        fragment_mol, ligand_mol = self._create_rdkit_molecules(pdb_ligand, pdb_fragment)
+        #fragment_mol, ligand_mol = self._create_rdkit_molecules(pdb_ligand, pdb_fragment)
         # Join Molecules
-        self.grown_ligand = self._merge_ligand_and_fragment(fragment_mol, ligand_mol, pdb_atom_core_name, pdb_atom_fragment_name)
-        self._reduce_molecule_size(self.grown_ligand,lamda_in)
-        breakpoint()
+        #self.grown_ligand = self._merge_ligand_and_fragment(fragment_mol, ligand_mol, pdb_atom_core_name, pdb_atom_fragment_name)
+        #self._set_PDB_Residue_info(self.grown_ligand)
+        #self._reduce_molecule_size(self.grown_ligand,lam_initial)
 
     def _create_rdkit_molecules(self, pdb_ligand, pdb_fragment):
         """
@@ -63,6 +63,7 @@ class PDBHandler():
         import prody
 
         ligand = prody.parsePDB(complex_pdb, chain='Z')
+        self._write_pdb(ligand)
         return ligand
 
     def _merge_ligand_and_fragment(self, fragment_mol, ligand_mol, pdb_atom_core_name, pdb_atom_fragment_name):
@@ -80,24 +81,29 @@ class PDBHandler():
         """
         from rdkit import Chem
         from rdkit.Chem import AllChem
-
         unlinked_molecules = Chem.CombineMols(fragment_mol, ligand_mol)
         mw = Chem.RWMol(unlinked_molecules)
         for atom in mw.GetAtoms():
-            if atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_core_name and atom.GetPDBResidueInfo().GetChainId() != 'Z':
+            # CHANGE 'Z' TO CHAIN ID FROM USER FLAG
+            if atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_core_name and atom.GetPDBResidueInfo().GetChainId() == 'Z':
                 ligand_atom_idx = atom.GetIdx()
-                ligand_mol.GetAtomWithIdx(atom.GetIdx()).SetAtomicNum(0)
-            elif atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_fragment_name and atom.GetPDBResidueInfo().GetChainId() == 'Z':
+                #ligand_mol.GetAtomWithIdx(atom.GetIdx()).SetAtomicNum(0)
+            elif atom.GetPDBResidueInfo().GetName().split()[0] == pdb_atom_fragment_name and atom.GetPDBResidueInfo().GetChainId() != 'Z':
                 fragment_atom_idx = atom.GetIdx()
         mw.AddBond(ligand_atom_idx, fragment_atom_idx)
+        mw = Chem.AddHs(mw)
         Chem.SanitizeMol(mw)
+
+        self._check_and_fix_pdb_atom_names(mw)
         for atom in mw.GetAtoms():
             if atom.GetPDBResidueInfo().GetChainId() != 'Z':
                 self.fragment_atom_names.append(atom.GetPDBResidueInfo().GetName().split()[0])
-        self._check_and_fix_pdb_atom_names(mw)
         smiles = Chem.MolToSmiles(mw)
         grown_ligand = Chem.MolFromSmiles(smiles)
         AllChem.Compute2DCoords(grown_ligand)
+        from frag_pele.Utils.rdkit_wrapper import RDKitWrapper
+        grown_ligand = RDKitWrapper().check_rdkit(grown_ligand)
+        self._set_PDB_Residue_info(grown_ligand)
         return grown_ligand
 
     def _check_and_fix_pdb_atom_names(self, molecule):
@@ -107,15 +113,28 @@ class PDBHandler():
         -------
 
         """
+        from rdkit import Chem
+
         names = {}
-        info = Chem.AtomPDBResidueInfo()
         for atom in molecule.GetAtoms():
-            if atom.GetPDBResidueInfo().GetName().strip()[0] in names:
-                info.SetAtomName('%s%s' % (atom.GetPDBResidueInfo().GetName().strip()[0], str(names[atom.GetPDBResidueInfo().GetName().strip()[0]])+1)))
-                names[atom.GetPDBResidueInfo().GetName().strip()[0]] += 1
-            else:
-                names[atom.GetPDBResidueInfo().GetName().strip()[0]] = 1
-                info.SetAtomName('%s%s' % (atom.GetPDBResidueInfo().GetName().strip()[0],'1'))
+            try:
+                if atom.GetPDBResidueInfo().GetName().strip()[0] in names:
+                    atom.GetMonomerInfo().SetName(' %s%s ' % (atom.GetPDBResidueInfo().GetName().strip()[0], str(names[atom.GetPDBResidueInfo().GetName().strip()[0]]+1)))
+                    names[atom.GetPDBResidueInfo().GetName().strip()[0]] += 1
+                else:
+                    names[atom.GetPDBResidueInfo().GetName().strip()[0]] = 1
+                    atom.GetMonomerInfo().SetName(' %s%s ' % (atom.GetPDBResidueInfo().GetName().strip()[0],'1'))
+            except AttributeError:
+                mi = Chem.AtomPDBResidueInfo()
+                if 'H' in names:
+                    names['H'] += 1
+                    mi.SetName(' %s%s ' % ('H', str(names['H'])))
+                    #atom.SetMonomerInfo().SetName(' %s ' % ('H1'))
+                else:
+                    names['H'] = 1
+                    mi.SetName(' %s ' % ('H1'))
+                    #atom.SetMonomerInfo().SetName(' %s%s ' % ('H',str(names['H'])))
+                atom.SetMonomerInfo(mi)
 
     def _write_pdb(self, pdb_ligand):
         """
@@ -132,7 +151,7 @@ class PDBHandler():
         prody.writePDB(f"{output_pdb_name}", pdb_ligand)
         print(f"wrote {output_pdb_name}")
 
-    def _reduce_molecule_size(self, molecule, lambda_in):
+    def _reduce_molecule_size(self, molecule, lam_initial):
         """
         This function performs a reduction of the size of a given residue of a ProDy molecule object.
 
@@ -144,15 +163,16 @@ class PDBHandler():
 
         """
         from rdkit.Geometry import Point3D
-
+        lambda_in = 1- lam_initial
         if lambda_in >= 0 and lambda_in <= 1:
             centroid = self._compute_centroid(molecule)
             for atom in molecule.GetAtoms():
-                atom_coords = self._get_coords(molecule)[atom.GetIdx()]
-                new_coords = self._move_atom_along_vector(atom_coords, centroid, lambda_in)
-                conf = molecule.GetConformer()
-                x, y, z = new_coords[0], new_coords[1], new_coords[2]
-                conf.SetAtomPosition(atom.GetIdx(), Point3D(x, y, z))
+                if atom.GetPDBResidueInfo().GetName().split()[0] in self.fragment_atom_names:
+                    atom_coords = self._get_coords(molecule)[atom.GetIdx()]
+                    new_coords = self._move_atom_along_vector(atom_coords, centroid, lambda_in)
+                    conf = molecule.GetConformer()
+                    x, y, z = new_coords[0], new_coords[1], new_coords[2]
+                    conf.SetAtomPosition(atom.GetIdx(), Point3D(x, y, z))
 
     def _move_atom_along_vector(self, initial_coord, final_coord, position_proportion):
         """
@@ -206,4 +226,31 @@ class PDBHandler():
             z.append(float(coord[2]))
         centroid = (np.mean(x), np.mean(y), np.mean(z))
         return centroid
+
+    def _set_PDB_Residue_info(self, molecule):
+        """
+
+        Parameters
+        ----------
+        molecule
+
+        Returns
+        -------
+
+        """
+        from rdkit import Chem
+        for line in Chem.MolToPDBBlock(molecule).split('\n'):
+            if 'HETATM' in line:
+                mi = Chem.AtomPDBResidueInfo()
+                pdb_atom_name = line.split()[2]
+                atom = molecule.GetAtomWithIdx(int(line.split()[1])-1)
+                mi.SetName(' ' + pdb_atom_name + ' ')
+                mi.SetResidueName('LIG')
+                mi.SetChainId('Z')
+                mi.SetIsHeteroAtom(True)
+                atom.SetMonomerInfo(mi)
+
+
+
+
 

@@ -261,6 +261,7 @@ def run_fragpele(parameters):
     from frag_pele.Growing.reduction import FragmentReduction
     from frag_pele.Helpers.path import PathHandler
     from frag_pele.Growing.pdbs import PDBHandler
+    from frag_pele.Utils.rdkit_wrapper import RDKitWrapper
     from logging.config import fileConfig
     import logging
     import time
@@ -280,29 +281,22 @@ def run_fragpele(parameters):
     start_time = time.time()
 
     # Initialize parameters
-    sim_parameters = ParametersBuilder(parameters.serie_file, parameters.protocol, parameters.test)
+    sim_parameters = ParametersBuilder()
+    PDBreader = PDBHandler()
 
-    # Define Paths
-    paths = PathHandler(PackagePath,
-                        parameters.plop_path,
-                        parameters.sch_path,
-                        parameters.complex_pdb,
-                        parameters.pdbout,
-                        parameters.force_field,
-                        sim_parameters._ID,
-                        parameters.dist_constraint,
-                        parameters.data,
-                        parameters.documents)
+    ligand_pdb = PDBreader._get_pdb_components(parameters.complex_pdb)
+    instructions = sim_parameters._read_instructions_from_file(parameters.serie_file)
+    fragment_pdb, core_atom, h_core, fragment_atom, h_frag =  sim_parameters._extract_linker_atoms(instructions)
+    fragment_mol, ligand_mol = PDBreader._create_rdkit_molecules(ligand_pdb, fragment_pdb)
 
     # Preparation
-    #    a) Fragment reduction
-    reduction = FragmentReduction(parameters.iterations, parameters.start_growing_from)
-    print(f"Reducing fragment size to the {reduction._lam_initial * 100} %")
-    #    b) Fragment Merging
-    pdbs = PDBHandler(parameters.complex_pdb,
-               sim_parameters._fragment_pdb,
-               sim_parameters._core_atom,
-               sim_parameters._fragment_atom)
+    #    a) Fragment reduction parameters
+    Reduction = FragmentReduction()
+    lam_initial = Reduction._define_lam(parameters.iterations, parameters.start_growing_from)
+    print(f"Reducing fragment size to the {lam_initial * 100} %")
+
+    #    b) Fragment Merging and reduction
+    grown_ligand = PDBreader._merge_ligand_and_fragment(fragment_mol,ligand_mol,core_atom,fragment_atom)
 
     #    c) Create Templates
     #    d) Get Templates
