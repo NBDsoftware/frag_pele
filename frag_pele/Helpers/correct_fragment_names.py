@@ -12,7 +12,7 @@ def main(pdb_path, lig_chain="L"):
             counters = {i: elements.count(i) for i in list_of_unique_elements}
             counter = counters[line[76:78]]
             new_name = "{}{}".format(line[76:78].strip().upper(), counter)
-            while new_name < 4:
+            while len(new_name) < 4:
                 new_name = new_name + " "
             dictionary_to_transcript[line[12:16]] = new_name
             line = list(line)
