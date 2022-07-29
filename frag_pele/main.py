@@ -253,6 +253,9 @@ def parse_arguments():
     #Others
     parser.add_argument("--rename", action="store_true",
                         help="Avoid core renaming")
+    parser.add_argument("--external_templates", default=[], type=str, nargs='+', action='append',
+                        help="List of paths to external templates to be added to the " +
+                             "resulting DataLocal folder")
 
     args = parser.parse_args()
 
@@ -268,7 +271,7 @@ def parse_arguments():
            args.radius_box, args.sampling_control, args.data, args.documents, args.only_prepare, args.only_grow, \
            args.no_check, args.debug, args.highthroughput, args.test, args.cov_res, args.dist_const, \
            args.constraint_core, args.dih_constr, args.protocol, args.st_from, args.min_grow, args.min_sampling, \
-           args.force_field, args.dihedrals_list, args.srun, args.keep_templates
+           args.force_field, args.dihedrals_list, args.srun, args.keep_templates, args.external_templates
 
 
 def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iterations, criteria, plop_path, sch_path,
@@ -280,7 +283,7 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
                   radius_box=4, sampling_control=None, data=None, documents=None, only_prepare=False, only_grow=False, 
                   no_check=False, debug=False, cov_res=None, dist_constraint=None, constraint_core=None,
                   dih_constr=None, growing_protocol="SoftcoreLike", start_growing_from=0.0, min_grow=0.01, min_sampling=0.1,
-                  force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False):
+                  force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[]):
 
 
     """
@@ -813,6 +816,15 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
     shutil.copy(os.path.join(selected_results_path, best_structure_file), os.path.join(working_dir,
                                                                                        '{}_top.pdb'.format(ID)))
 
+    # Copy external templates (if any) to the resulting DataLocal folder
+    for external_template in external_templates:
+        if isinstance(external_template, str) and os.path.isfile(external_template):
+            shutil.copy(external_template, os.path.join(path_to_templates,
+                                                        os.path.basename(external_template)))
+        else:
+            print(f"Warning! Cannot copy external template " +
+                  f"'{external_template}' because it is not valid")
+
     # COMPUTE AND SAVE THE SCORE
     analyser.analyse_at_epoch(report_prefix=report, path_to_equilibration=equilibration_path, execution_dir=curr_dir,
                               column=criteria, quantile_value=0.25)
@@ -852,7 +864,7 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
          documents=c.PATH_TO_PELE_DOCUMENTS, only_prepare=False, only_grow=False, no_check=False, debug=False, 
          protocol=False, test=False, cov_res=None, dist_constraint=None, constraint_core=False, dih_constr=None, 
          growing_protocol="SoftcoreLike", start_growing_from=0.0, min_grow=0.01, min_sampling=0.1, 
-         force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False):
+         force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[]):
 
     if protocol == "HT":
         iteration = 1
@@ -944,7 +956,7 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
                                    translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
                                    only_prepare, only_grow, no_check, debug, cov_res, dist_constraint, constraint_core,
                                    dih_constr, growing_protocol, start_growing_from, min_grow, min_sampling, force_field,
-                                   dih_to_constraint, srun, keep_templates)
+                                   dih_to_constraint, srun, keep_templates, external_templates)
 
                     atomname_mappig.append(atomname_map)
  
@@ -1000,7 +1012,7 @@ if __name__ == '__main__':
     translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents, \
     only_prepare, only_grow, no_check, debug, protocol, test, cov_res, dist_constraint, constraint_core, \
     dih_constr, protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun, \
-    keep_templates = parse_arguments()
+    keep_templates, external_templates = parse_arguments()
     
     main(complex_pdb, serie_file, iterations, criteria, plop_path, sch_path, pele_dir, contrl, license, resfold,
          report, traject, pdbout, cpus, distcont, threshold, epsilon, condition, metricweights,
@@ -1010,5 +1022,5 @@ if __name__ == '__main__':
          translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
          only_prepare, only_grow, no_check, debug, protocol, test, cov_res, dist_constraint, constraint_core,
          dih_constr, protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun,
-         keep_templates)
+         keep_templates, external_templates)
 
