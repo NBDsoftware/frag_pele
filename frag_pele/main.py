@@ -253,7 +253,7 @@ def parse_arguments():
     #Others
     parser.add_argument("--rename", action="store_true",
                         help="Avoid core renaming")
-    parser.add_argument("--external_templates", default=[], type=str, nargs='+', action='append',
+    parser.add_argument("--external_templates", default=[], type=str, nargs='+',
                         help="List of paths to external templates to be added to the " +
                              "resulting DataLocal folder")
 
@@ -426,6 +426,16 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
                                                    "DataLocal/Templates/OPLS2005/HeteroAtoms/templates_generated".format(force_field))
         path_to_templates = os.path.join(working_dir, "DataLocal/Templates/OPLS2005/HeteroAtoms".format(force_field))
     path_to_lib = os.path.join(working_dir, "DataLocal/LigandRotamerLibs")
+
+    # Copy external templates (if any) to the resulting DataLocal folder
+    for external_template in external_templates:
+        if isinstance(external_template, str) and os.path.isfile(external_template):
+            shutil.copy(external_template, os.path.join(path_to_templates,
+                                                        os.path.basename(external_template)))
+        else:
+            print(f"Warning! Cannot copy external template " +
+                  f"'{external_template}' because it is not valid")
+
     # Creation of output folder
     folder_handler.check_and_create_DataLocal(working_dir=working_dir)
     # Creating constraints
@@ -816,15 +826,6 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
     shutil.copy(os.path.join(selected_results_path, best_structure_file), os.path.join(working_dir,
                                                                                        '{}_top.pdb'.format(ID)))
 
-    # Copy external templates (if any) to the resulting DataLocal folder
-    for external_template in external_templates:
-        if isinstance(external_template, str) and os.path.isfile(external_template):
-            shutil.copy(external_template, os.path.join(path_to_templates,
-                                                        os.path.basename(external_template)))
-        else:
-            print(f"Warning! Cannot copy external template " +
-                  f"'{external_template}' because it is not valid")
-
     # COMPUTE AND SAVE THE SCORE
     analyser.analyse_at_epoch(report_prefix=report, path_to_equilibration=equilibration_path, execution_dir=curr_dir,
                               column=criteria, quantile_value=0.25)
@@ -996,7 +997,7 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
                      translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
                      only_prepare, only_grow, no_check, debug, cov_res, dist_constraint, constraint_core, dih_constr,
                      growing_protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun,
-                     keep_templates)
+                     keep_templates, external_templates)
             except Exception:
                 os.chdir(original_dir)
                 traceback.print_exc()
