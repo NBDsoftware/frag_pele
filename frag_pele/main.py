@@ -427,6 +427,9 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
         path_to_templates = os.path.join(working_dir, "DataLocal/Templates/OPLS2005/HeteroAtoms".format(force_field))
     path_to_lib = os.path.join(working_dir, "DataLocal/LigandRotamerLibs")
 
+    # Creation of output folder
+    folder_handler.check_and_create_DataLocal(working_dir=working_dir)
+
     # Copy external templates (if any) to the resulting DataLocal folder
     for external_template in external_templates:
         if isinstance(external_template, str) and os.path.isfile(external_template):
@@ -436,8 +439,6 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
             print(f"Warning! Cannot copy external template " +
                   f"'{external_template}' because it is not valid")
 
-    # Creation of output folder
-    folder_handler.check_and_create_DataLocal(working_dir=working_dir)
     # Creating constraints
     const = "\n".join(constraints.retrieve_constraints(complex_pdb, {}, {}, 5, 5, 10))
     if dist_constraint:
