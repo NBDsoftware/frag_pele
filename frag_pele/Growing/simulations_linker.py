@@ -98,7 +98,7 @@ def simulation_runner(path_to_pele, control_in, cpus=4, srun=True):
     if cpus:
         cpus = int(cpus)
         if cpus < 2:
-            logger.critical("Sorry, to run PELE with paralel processors you need at least 2 cores!")
+            logger.critical("Sorry, to run PELE with parallel processors you need at least 2 cores!")
         else:
             if srun:
                 logger.info("Starting PELE simulation. You will run srun with {} cores.".format(cpus))

@@ -85,11 +85,6 @@ def get_template_and_rot(pdb, forcefield='OPLS2005', template_name='grw', aminoa
         ff = OpenForceField('openff_unconstrained-2.0.0.offxml')
     parameters = ff.parameterize(m)
     topology = Topology(m, parameters)
-    if forcefield == 'OFF': # Not tested yet
-        from peleffy.solvent import OBC2
-        solvent = OBC2(topology)
-        solvent.to_file(os.path.join(outdir,
-                                     "DataLocal/OBC/ligandParams.txt"))
 
     impact = Impact(topology)
     impact.to_file(template_path) 
@@ -99,6 +94,35 @@ def get_template_and_rot(pdb, forcefield='OPLS2005', template_name='grw', aminoa
     rotamer_library = RotamerLibrary(m)
     rotamer_library.to_file(rot_path)
     print("Rotamer library stored in {}".format(rot_path))
+
+    # Generate parameters for the rest of hetero molecules found in the PDB
+    from peleffy.utils.input import PDBFile
+
+    pdb_file = PDBFile('NLRP3_truncated.pdb')
+    molecules = pdb_file.get_hetero_molecules()
+
+    topologies = [topology, ]
+
+    for molecule in molecules:
+        # Skip ligand since it has already been parameterized
+        if molecule.tag == m.tag:
+            continue
+
+        parameters = ff.parameterize(molecule)
+        topology = Topology(molecule, parameters)
+        impact = Impact(topology)
+        impact.to_file(os.path.join(outdir,
+                                    f"DataLocal/Templates/OpenFF/Parsley/{molecule.tag}"))
+
+        topologies.append(topology)
+
+    # Generate OBC solvent parameters
+    if forcefield == 'OFF': # Not tested yet
+        from peleffy.solvent import OBC2
+        solvent = OBC2(topologies)
+        solvent.to_file(os.path.join(outdir,
+                                     "DataLocal/OBC/ligandParams.txt"))
+
 
 def add_off_waters_to_datalocal(outdir):
     path = os.path.dirname(frag_pele.__file__)
