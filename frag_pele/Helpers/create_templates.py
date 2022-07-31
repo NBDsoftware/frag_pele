@@ -82,7 +82,7 @@ def get_template_and_rot(pdb, forcefield='OPLS2005', template_name='grw', aminoa
     if forcefield == 'OPLS2005':
         ff = OPLS2005ForceField()
     if forcefield == 'OFF': # Not tested yet
-        ff = OpenForceField('openff_unconstrained-1.2.0.offxml')
+        ff = OpenForceField('openff_unconstrained-2.0.0.offxml')
     parameters = ff.parameterize(m)
     topology = Topology(m, parameters)
     if forcefield == 'OFF': # Not tested yet
