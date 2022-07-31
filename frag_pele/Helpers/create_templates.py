@@ -105,12 +105,16 @@ def get_template_and_rot(pdb, complex_pdb, c_chain, forcefield='OPLS2005', templ
     topologies = [topology, ]
 
     # Load quickly core molecule to discard it later
-    core_mol = pdb_file._extract_molecules_from_chain(c_chain,
-                                                      allow_undefined_stereo=True)
+    mols = pdb_file._extract_molecules_from_chain(c_chain, 30, True, True, [])
+
+    if len(mols) > 0:
+        core_mol_tag = mols[0].tag
+    else:
+        core_mol_tag = None
 
     for molecule in molecules:
         # Skip ligand since it has already been parameterized
-        if core_mol is not None and core_mol.tag == molecule.tag:
+        if core_mol_tag == molecule.tag:
             continue
 
         parameters = ff.parameterize(molecule)
