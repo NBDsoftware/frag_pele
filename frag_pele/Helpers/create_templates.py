@@ -12,7 +12,8 @@ from frag_pele.Helpers.plop_rot_temp import prepare_pdb
 from peleffy.utils import Logger
 
 logger = Logger()
-logger.set_level('WARNING')
+logger.set_level('INFO')
+logger.set_file_handler('peleffy.log')
 
 def create_template_path(path, name, forcefield='OPLS2005', protein=False, templates_generated=False):
     if templates_generated:
@@ -112,7 +113,7 @@ def get_template_and_rot(pdb, forcefield='OPLS2005', template_name='grw', aminoa
         topology = Topology(molecule, parameters)
         impact = Impact(topology)
         impact.to_file(os.path.join(outdir,
-                                    f"DataLocal/Templates/OpenFF/Parsley/{molecule.tag}"))
+                                    f"DataLocal/Templates/OpenFF/Parsley/{molecule.tag.lower()}z"))
 
         topologies.append(topology)
 
