@@ -283,7 +283,8 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
                   radius_box=4, sampling_control=None, data=None, documents=None, only_prepare=False, only_grow=False, 
                   no_check=False, debug=False, cov_res=None, dist_constraint=None, constraint_core=None,
                   dih_constr=None, growing_protocol="SoftcoreLike", start_growing_from=0.0, min_grow=0.01, min_sampling=0.1,
-                  force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[]):
+                  force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[],
+                  original_pdb=None):
 
 
     """
@@ -505,7 +506,8 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
                                                aminoacid=cov_res,
                                                rot_res=rotamers,
                                                aminoacid_type=aa_type,
-                                               sch_path = sch_path)
+                                               sch_path = sch_path,
+                                               original_pdb=original_pdb)
         if restart:
             if cov_res:
                 template_name = 'grw'
@@ -870,7 +872,8 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
          documents=c.PATH_TO_PELE_DOCUMENTS, only_prepare=False, only_grow=False, no_check=False, debug=False, 
          protocol=False, test=False, cov_res=None, dist_constraint=None, constraint_core=False, dih_constr=None, 
          growing_protocol="SoftcoreLike", start_growing_from=0.0, min_grow=0.01, min_sampling=0.1, 
-         force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[]):
+         force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[],
+         original_pdb=None):
 
     if protocol == "HT":
         iteration = 1
@@ -1002,7 +1005,7 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
                      translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
                      only_prepare, only_grow, no_check, debug, cov_res, dist_constraint, constraint_core, dih_constr,
                      growing_protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun,
-                     keep_templates, external_templates)
+                     keep_templates, external_templates, original_pdb)
             except Exception:
                 os.chdir(original_dir)
                 traceback.print_exc()
