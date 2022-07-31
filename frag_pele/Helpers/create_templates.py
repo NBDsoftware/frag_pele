@@ -12,7 +12,8 @@ from frag_pele.Helpers.plop_rot_temp import prepare_pdb
 from peleffy.utils import Logger
 
 logger = Logger()
-logger.set_level('WARNING')
+logger.set_level('INFO')
+logger.set_file_handler('peleffy.log')
 
 def create_template_path(path, name, forcefield='OPLS2005', protein=False, templates_generated=False):
     if templates_generated:
@@ -37,7 +38,7 @@ def create_template_path(path, name, forcefield='OPLS2005', protein=False, templ
                             templ_string, name.lower()+"z")
     return path
 
-def get_template_and_rot(pdb, forcefield='OPLS2005', template_name='grw', aminoacid=False, outdir='.', rot_res=30,
+def get_template_and_rot(pdb, complex_pdb, c_chain, forcefield='OPLS2005', template_name='grw', aminoacid=False, outdir='.', rot_res=30,
                          contrained_atoms=None, aminoacid_type=None, sch_path=c.SCHRODINGER):
     p, pdb_name = os.path.split(pdb)
     out = pdb_name.split(".pdb")[0] + "_p" + ".pdb"
@@ -98,14 +99,18 @@ def get_template_and_rot(pdb, forcefield='OPLS2005', template_name='grw', aminoa
     # Generate parameters for the rest of hetero molecules found in the PDB
     from peleffy.utils.input import PDBFile
 
-    pdb_file = PDBFile('NLRP3_truncated.pdb')
+    pdb_file = PDBFile(complex_pdb)
     molecules = pdb_file.get_hetero_molecules()
 
     topologies = [topology, ]
 
+    # Load quickly core molecule to discard it later
+    core_mol = pdb_file._extract_molecules_from_chain(c_chain,
+                                                      allow_undefined_stereo=True)
+
     for molecule in molecules:
         # Skip ligand since it has already been parameterized
-        if molecule.tag == m.tag:
+        if core_mol is not None and core_mol.tag == molecule.tag:
             continue
 
         parameters = ff.parameterize(molecule)
@@ -129,10 +134,10 @@ def add_off_waters_to_datalocal(outdir):
     shutil.copy(os.path.join(path, "Templates/OFF/hohz"),
                 os.path.join(outdir, "DataLocal/Templates/OpenFF/Parsley/hohz"))
  
-def get_datalocal(pdb, outdir='.', forcefield='OPLS2005', template_name='grw', aminoacid=False, rot_res=30,
+def get_datalocal(pdb, complex_pdb, c_chain, outdir='.', forcefield='OPLS2005', template_name='grw', aminoacid=False, rot_res=30,
                   constrainted_atoms=None, aminoacid_type=None, sch_path=c.SCHRODINGER):
     folder_handler.check_and_create_DataLocal(working_dir=outdir)
-    get_template_and_rot(pdb, forcefield=forcefield, template_name=template_name, 
+    get_template_and_rot(pdb, complex_pdb, c_chain, forcefield=forcefield, template_name=template_name,
                          aminoacid=aminoacid, outdir=outdir, rot_res=rot_res,
                          contrained_atoms=constrainted_atoms, aminoacid_type=aminoacid_type,
                          sch_path=sch_path)
