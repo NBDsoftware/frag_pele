@@ -246,6 +246,9 @@ def parse_arguments():
 
     parser.add_argument("--test", action="store_true", help="run test config")
 
+    parser.add_argument("--PM", "--pre_minimization", action="store_true",
+                        help=" Run PELE minimization step before growing steps.")
+
     #Output format option
     parser.add_argument("--mae", action="store_true",
                         help="Retrieve .mae files intead of pdbs")
@@ -269,7 +272,7 @@ def parse_arguments():
            args.banned, args.limit, args.mae, args.rename, args.clash_thr, args.steering, \
            args.translation_high, args.rotation_high, args.translation_low, args.rotation_low, args.explorative, \
            args.radius_box, args.sampling_control, args.data, args.documents, args.only_prepare, args.only_grow, \
-           args.no_check, args.debug, args.highthroughput, args.test, args.cov_res, args.dist_const, \
+           args.no_check, args.debug, args.highthroughput, args.test, args.pre_minimization, args.cov_res, args.dist_const, \
            args.constraint_core, args.dih_constr, args.protocol, args.st_from, args.min_grow, args.min_sampling, \
            args.force_field, args.dihedrals_list, args.srun, args.keep_templates, args.external_templates
 
@@ -284,7 +287,7 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
                   no_check=False, debug=False, cov_res=None, dist_constraint=None, constraint_core=None,
                   dih_constr=None, growing_protocol="SoftcoreLike", start_growing_from=0.0, min_grow=0.01, min_sampling=0.1,
                   force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[],
-                  original_pdb=None):
+                  original_pdb=None, pre_minimization=False):
 
 
     """
@@ -397,6 +400,8 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
     :type radius_box: float
     :param sampling_control: templatized control file to be used in the sampling simulation.
     :type sampling_control: str
+    :param pre_minimization: protocol to run PELE minimizaiton step before growing steps.
+    :type pre_minimization: bool
     :return:
     """
     #Check harcoded path in constants.py
@@ -625,6 +630,8 @@ def grow_fragment(complex_pdb, fragment_pdb, core_atom, fragment_atom, iteration
     copy_const_nondih = const
     # Simulation loop - LOOP CORE
     skipped_steps = False
+    if pre_minimization:
+        # Code to run Pre-minimization protocol.
     for i, (template, pdb_file, result) in enumerate(zip(templates, pdbs, results)):
 
         # Only if reset
@@ -870,7 +877,7 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
          rotation_high=c.ROTATION_HIGH, translation_low=c.TRANSLATION_LOW, rotation_low=c.ROTATION_LOW, 
          explorative=False, radius_box=c.RADIUS_BOX, sampling_control=None, data=c.PATH_TO_PELE_DATA, 
          documents=c.PATH_TO_PELE_DOCUMENTS, only_prepare=False, only_grow=False, no_check=False, debug=False, 
-         protocol=False, test=False, cov_res=None, dist_constraint=None, constraint_core=False, dih_constr=None, 
+         protocol=False, test=False, pre_minimization=False, cov_res=None, dist_constraint=None, constraint_core=False, dih_constr=None,
          growing_protocol="SoftcoreLike", start_growing_from=0.0, min_grow=0.01, min_sampling=0.1, 
          force_field='OPLS2005', dih_to_constraint=None, srun=True, keep_templates=False, external_templates=[],
          original_pdb=None):
@@ -965,7 +972,7 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
                                    translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
                                    only_prepare, only_grow, no_check, debug, cov_res, dist_constraint, constraint_core,
                                    dih_constr, growing_protocol, start_growing_from, min_grow, min_sampling, force_field,
-                                   dih_to_constraint, srun, keep_templates, external_templates)
+                                   dih_to_constraint, srun, keep_templates, external_templates, pre_minimization)
 
                     atomname_mappig.append(atomname_map)
  
@@ -1005,7 +1012,7 @@ def main(complex_pdb, serie_file, iterations=c.GROWING_STEPS, criteria=c.SELECTI
                      translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
                      only_prepare, only_grow, no_check, debug, cov_res, dist_constraint, constraint_core, dih_constr,
                      growing_protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun,
-                     keep_templates, external_templates, original_pdb)
+                     keep_templates, external_templates, original_pdb, pre_minimization)
             except Exception:
                 os.chdir(original_dir)
                 traceback.print_exc()
@@ -1019,7 +1026,7 @@ if __name__ == '__main__':
     c_chain, f_chain, steps, temperature, seed, rotamers, banned, limit, mae, \
     rename, threshold_clash, steering, translation_high, rotation_high, \
     translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents, \
-    only_prepare, only_grow, no_check, debug, protocol, test, cov_res, dist_constraint, constraint_core, \
+    only_prepare, only_grow, no_check, debug, protocol, test, pre_minimization, cov_res, dist_constraint, constraint_core, \
     dih_constr, protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun, \
     keep_templates, external_templates = parse_arguments()
     
@@ -1029,7 +1036,7 @@ if __name__ == '__main__':
          c_chain, f_chain, steps, temperature, seed, rotamers, banned, limit, mae,
          rename, threshold_clash, steering, translation_high, rotation_high,
          translation_low, rotation_low, explorative, radius_box, sampling_control, data, documents,
-         only_prepare, only_grow, no_check, debug, protocol, test, cov_res, dist_constraint, constraint_core,
+         only_prepare, only_grow, no_check, debug, protocol, test, pre_minimization, cov_res, dist_constraint, constraint_core,
          dih_constr, protocol, start_growing_from, min_grow, min_sampling, force_field, dih_to_constraint, srun,
          keep_templates, external_templates)
 
